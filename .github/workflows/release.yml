@@ -1,6 +1,6 @@
 # Publishes the Docker image and the Helm chart to GitHub Container Registry.
 #   - push on main: image `main-<sha>`, chart `0.1.0-<sha>`
-#   - tag `vX.Y.Z`: image `vX.Y.Z`, chart `X.Y.Z`
+#   - tag `vX.Y.Z`: image `vX.Y.Z` + `latest`, chart `X.Y.Z`
 # Uses the built-in GITHUB_TOKEN: no secret to configure.
 name: Release
 
@@ -37,6 +37,7 @@ jobs:
           images: ${{ env.IMAGE_NAME }}
           tags: |
             type=ref,event=tag
+            type=raw,value=latest,enable=${{ startsWith(github.ref, 'refs/tags/v') }}
             type=sha,prefix=main-,enable=${{ github.ref == 'refs/heads/main' }}
       - uses: docker/build-push-action@v6
         with:

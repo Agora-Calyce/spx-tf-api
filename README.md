@@ -83,7 +83,7 @@ The server will be accessible at `http://localhost:8080`.
 
 ### Using with Docker
 
-A prebuilt image is published to GitHub Container Registry (`vX.Y.Z` for releases, `main-<sha>` for the main branch):
+A prebuilt image is published to GitHub Container Registry (`vX.Y.Z` and `latest` for releases, `main-<sha>` for the main branch):
 
 ```bash
 docker pull ghcr.io/agora-calyce/spx-tf-api:<tag>
