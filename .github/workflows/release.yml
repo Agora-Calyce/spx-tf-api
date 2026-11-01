@@ -22,7 +22,7 @@ env:
 
 jobs:
   docker:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@v4
       - uses: docker/setup-buildx-action@v3
@@ -47,7 +47,7 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
 
   helm:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     needs: docker
     steps:
       - uses: actions/checkout@v4
