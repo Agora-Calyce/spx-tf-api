@@ -1,0 +1,2003 @@
+basePath: /
+definitions:
+  internal_api_models.DiskSource:
+    properties:
+      clone:
+        example: disk-eid
+        type: string
+      snapshot:
+        example: snapshot-eid
+        type: string
+      type:
+        description: blank, http, snapshot, clone, registry
+        example: blank
+        type: string
+      url:
+        example: http://example.com/image.qcow2
+        type: string
+    type: object
+  internal_api_models.EgressRule:
+    properties:
+      allowAll:
+        type: boolean
+      denyAll:
+        type: boolean
+      ports:
+        items:
+          $ref: '#/definitions/internal_api_models.SgPort'
+        type: array
+      to:
+        items:
+          $ref: '#/definitions/internal_api_models.Peer'
+        type: array
+    type: object
+  internal_api_models.IPBlock:
+    properties:
+      CIDR:
+        type: string
+      Except:
+        items:
+          type: string
+        type: array
+    type: object
+  internal_api_models.IngressRule:
+    properties:
+      allowAll:
+        type: boolean
+      denyAll:
+        type: boolean
+      from:
+        items:
+          $ref: '#/definitions/internal_api_models.Peer'
+        type: array
+      ports:
+        items:
+          $ref: '#/definitions/internal_api_models.SgPort'
+        type: array
+    type: object
+  internal_api_models.LabelSelector:
+    properties:
+      matchExpressions:
+        items:
+          $ref: '#/definitions/internal_api_models.MatchExpression'
+        type: array
+      matchLabels:
+        items:
+          type: string
+        type: array
+    type: object
+  internal_api_models.MatchExpression:
+    properties:
+      key:
+        type: string
+      operator:
+        type: string
+      values:
+        items:
+          type: string
+        type: array
+    type: object
+  internal_api_models.Peer:
+    properties:
+      IPBlock:
+        $ref: '#/definitions/internal_api_models.IPBlock'
+      podSelector:
+        $ref: '#/definitions/internal_api_models.LabelSelector'
+    type: object
+  internal_api_models.SgPort:
+    properties:
+      endPort:
+        type: integer
+      port:
+        type: integer
+      protocol:
+        type: string
+    type: object
+  internal_api_models.StaticRoute:
+    properties:
+      cidr:
+        example: 192.168.0.0/24
+        type: string
+      next_hop_ip:
+        example: 10.0.0.254
+        type: string
+      policy:
+        description: policyDst ou policySrc
+        example: policyDst
+        type: string
+      route_table:
+        description: EID du subnet
+        example: subnet-eid
+        type: string
+    type: object
+  models.Disk:
+    properties:
+      az:
+        example: az1
+        type: string
+      id:
+        example: disk-12345
+        type: string
+      labels:
+        items:
+          type: string
+        type: array
+      name:
+        example: mon-disque
+        type: string
+      size:
+        example: 10
+        type: integer
+      source:
+        $ref: '#/definitions/internal_api_models.DiskSource'
+      storage_class:
+        example: standard
+        type: string
+    type: object
+  models.DiskRequest:
+    properties:
+      labels:
+        description: Labels au format "user.superphenix.net/clé:valeur"
+        items:
+          type: string
+        type: array
+      name:
+        example: mon-disque
+        type: string
+      size:
+        example: 10
+        type: integer
+      source:
+        $ref: '#/definitions/internal_api_models.DiskSource'
+      storage_class:
+        example: standard
+        type: string
+    type: object
+  models.Eip:
+    properties:
+      az:
+        example: az1
+        type: string
+      dnat:
+        items:
+          $ref: '#/definitions/models.EipDNAT'
+        type: array
+      external_ip:
+        example: 1.2.3.4
+        type: string
+      id:
+        example: eip-12345
+        type: string
+      internal_ip:
+        example: 10.0.0.5
+        type: string
+      name:
+        example: mon-eip
+        type: string
+      nat:
+        example: fip
+        type: string
+      snat:
+        example:
+        - 10.0.0.10
+        - 10.0.0.11
+        items:
+          type: string
+        type: array
+      subnet_id:
+        example: subnet-123
+        type: string
+    type: object
+  models.EipDNAT:
+    properties:
+      external_port:
+        example: "80"
+        type: string
+      internal_ip:
+        example: 10.0.0.10
+        type: string
+      internal_port:
+        example: "8080"
+        type: string
+      protocol:
+        example: tcp
+        type: string
+    type: object
+  models.EipRequest:
+    properties:
+      dnat:
+        items:
+          $ref: '#/definitions/models.EipDNAT'
+        type: array
+      internal_ip:
+        example: 10.0.0.5
+        type: string
+      name:
+        example: mon-eip
+        type: string
+      snat:
+        items:
+          type: string
+        type: array
+      subnet_id:
+        example: subnet-123
+        type: string
+    type: object
+  models.SSHKey:
+    properties:
+      fingerprint:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      publicKey:
+        type: string
+    type: object
+  models.SSHKeyRequest:
+    properties:
+      name:
+        type: string
+      publicKey:
+        type: string
+    type: object
+  models.SecurityGroup:
+    properties:
+      description:
+        type: string
+      egress:
+        items:
+          $ref: '#/definitions/internal_api_models.EgressRule'
+        type: array
+      id:
+        type: string
+      ingress:
+        items:
+          $ref: '#/definitions/internal_api_models.IngressRule'
+        type: array
+      name:
+        type: string
+      subnetIds:
+        items:
+          type: string
+        type: array
+      target:
+        $ref: '#/definitions/internal_api_models.LabelSelector'
+    type: object
+  models.SecurityGroupRequest:
+    properties:
+      description:
+        type: string
+      egress:
+        items:
+          $ref: '#/definitions/internal_api_models.EgressRule'
+        type: array
+      ingress:
+        items:
+          $ref: '#/definitions/internal_api_models.IngressRule'
+        type: array
+      name:
+        type: string
+      subnetIds:
+        description: SubnetIDs limite le groupe de sécurité à ces subnets (vide =
+          tous les subnets)
+        items:
+          type: string
+        type: array
+      target:
+        $ref: '#/definitions/internal_api_models.LabelSelector'
+    required:
+    - name
+    type: object
+  models.Subnet:
+    properties:
+      az:
+        example: az1
+        type: string
+      dns_v4:
+        example: 8.8.8.8
+        type: string
+      dns_v6:
+        example: 2001:4860:4860::8888
+        type: string
+      id:
+        example: subnet-12345
+        type: string
+      ipv4:
+        example: 10.0.1.0/24
+        type: string
+      ipv6:
+        example: 2001:db8::/64
+        type: string
+      name:
+        example: mon-subnet
+        type: string
+      nat_gateway:
+        example: false
+        type: boolean
+      nat_gateway_ip:
+        example: 10.0.1.1
+        type: string
+      private:
+        example: true
+        type: boolean
+      protocol:
+        example: IPv4
+        type: string
+      vpc_id:
+        example: vpc-12345
+        type: string
+    type: object
+  models.SubnetRequest:
+    properties:
+      dns_v4:
+        example: 8.8.8.8
+        type: string
+      dns_v6:
+        example: 2001:4860:4860::8888
+        type: string
+      ipv4:
+        example: 10.0.1.0/24
+        type: string
+      ipv6:
+        example: 2001:db8::/64
+        type: string
+      name:
+        example: mon-subnet
+        type: string
+      nat_gateway:
+        example: false
+        type: boolean
+      private:
+        example: true
+        type: boolean
+      protocol:
+        example: IPv4
+        type: string
+      vpc_id:
+        example: vpc-12345
+        type: string
+    type: object
+  models.VPC:
+    properties:
+      az:
+        example: az1
+        type: string
+      id:
+        example: vpc-12345
+        type: string
+      name:
+        example: mon-vpc-reseau
+        type: string
+      static_routes:
+        items:
+          $ref: '#/definitions/internal_api_models.StaticRoute'
+        type: array
+    type: object
+  models.VPCRequest:
+    properties:
+      name:
+        example: mon-vpc-reseau
+        type: string
+      static_routes:
+        description: 'StaticRoutes (mise à jour uniquement) : nil = routes existantes
+          conservées, [] = toutes supprimées'
+        items:
+          $ref: '#/definitions/internal_api_models.StaticRoute'
+        type: array
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: API Proxy pour la génération d'un provider Terraform.
+  title: SPX TF Proxy API
+  version: "1.0"
+paths:
+  /{orga_id}/{az}/{project_id}/disks:
+    get:
+      description: Renvoie la liste de tous les disques en appelant l'API SPX.
+      parameters:
+      - description: ID de l'organisation
+        in: path
+        name: orga_id
+        required: true
+        type: string
+      - description: Zone de disponibilité
+        in: path
+        name: az
+        required: true
+        type: string
+      - description: ID du projet
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - description: api-token {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Disk'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Lister les disques
+      tags:
+      - disk
+    post:
+      consumes:
+      - application/json
+      description: Crée une nouvelle ressource disque en appelant l'API SPX.
+      parameters:
+      - description: ID de l'organisation
+        in: path
+        name: orga_id
+        required: true
+        type: string
+      - description: Zone de disponibilité
+        in: path
+        name: az
+        required: true
+        type: string
+      - description: ID du projet
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - description: Disk Request Body
+        in: body
+        name: disk
+        required: true
+        schema:
+          $ref: '#/definitions/models.DiskRequest'
+      - description: api-token {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.Disk'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Créer un disque
+      tags:
+      - disk
+  /{orga_id}/{az}/{project_id}/disks/{id}:
+    delete:
+      description: Supprime un disque en appelant l'API SPX.
+      parameters:
+      - description: ID de l'organisation
+        in: path
+        name: orga_id
+        required: true
+        type: string
+      - description: Zone de disponibilité
+        in: path
+        name: az
+        required: true
+        type: string
+      - description: ID du projet
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - description: Disk ID (Effective ID)
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: api-token {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Supprimer un disque
+      tags:
+      - disk
+    get:
+      description: Récupère les détails d'un disque en appelant l'API SPX.
+      parameters:
+      - description: ID de l'organisation
+        in: path
+        name: orga_id
+        required: true
+        type: string
+      - description: Zone de disponibilité
+        in: path
+        name: az
+        required: true
+        type: string
+      - description: ID du projet
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - description: Disk ID (Effective ID)
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: api-token {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Disk'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Récupérer un disque
+      tags:
+      - disk
+    put:
+      consumes:
+      - application/json
+      description: Met à jour le nom d'un disque en appelant l'API SPX.
+      parameters:
+      - description: ID de l'organisation
+        in: path
+        name: orga_id
+        required: true
+        type: string
+      - description: Zone de disponibilité
+        in: path
+        name: az
+        required: true
+        type: string
+      - description: ID du projet
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - description: Disk ID (Effective ID)
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Disk Request Body
+        in: body
+        name: disk
+        required: true
+        schema:
+          $ref: '#/definitions/models.DiskRequest'
+      - description: api-token {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Disk'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Mettre à jour un disque
+      tags:
+      - disk
+  /{orga_id}/{az}/{project_id}/eips:
+    get:
+      description: Renvoie la liste de tous les EIPs en appelant l'API SPX.
+      parameters:
+      - description: ID de l'organisation
+        in: path
+        name: orga_id
+        required: true
+        type: string
+      - description: Zone de disponibilité
+        in: path
+        name: az
+        required: true
+        type: string
+      - description: ID du projet
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - description: api-token {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Eip'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Lister les EIPs
+      tags:
+      - eip
+    post:
+      consumes:
+      - application/json
+      description: Crée une nouvelle ressource EIP en appelant l'API SPX.
+      parameters:
+      - description: ID de l'organisation
+        in: path
+        name: orga_id
+        required: true
+        type: string
+      - description: Zone de disponibilité
+        in: path
+        name: az
+        required: true
+        type: string
+      - description: ID du projet
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - description: EIP Request Body
+        in: body
+        name: eip
+        required: true
+        schema:
+          $ref: '#/definitions/models.EipRequest'
+      - description: api-token {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.Eip'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Créer un EIP
+      tags:
+      - eip
+  /{orga_id}/{az}/{project_id}/eips/{id}:
+    delete:
+      description: Supprime un EIP en appelant l'API SPX et attend sa disparition
+        réelle.
+      parameters:
+      - description: ID de l'organisation
+        in: path
+        name: orga_id
+        required: true
+        type: string
+      - description: Zone de disponibilité
+        in: path
+        name: az
+        required: true
+        type: string
+      - description: ID du projet
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - description: EIP ID (Effective ID)
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: api-token {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Supprimer un EIP
+      tags:
+      - eip
+    get:
+      description: Récupère les détails d'un EIP en appelant l'API SPX.
+      parameters:
+      - description: ID de l'organisation
+        in: path
+        name: orga_id
+        required: true
+        type: string
+      - description: Zone de disponibilité
+        in: path
+        name: az
+        required: true
+        type: string
+      - description: ID du projet
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - description: EIP ID (Effective ID)
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: api-token {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Eip'
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Récupérer un EIP
+      tags:
+      - eip
+    put:
+      consumes:
+      - application/json
+      description: Met à jour un EIP en appelant l'API SPX.
+      parameters:
+      - description: ID de l'organisation
+        in: path
+        name: orga_id
+        required: true
+        type: string
+      - description: Zone de disponibilité
+        in: path
+        name: az
+        required: true
+        type: string
+      - description: ID du projet
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - description: EIP ID (Effective ID)
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: EIP Request Body
+        in: body
+        name: eip
+        required: true
+        schema:
+          $ref: '#/definitions/models.EipRequest'
+      - description: api-token {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Eip'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Mettre à jour un EIP
+      tags:
+      - eip
+  /{orga_id}/{az}/{project_id}/security-groups:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: ID Organisation
+        in: path
+        name: orga_id
+        required: true
+        type: string
+      - description: Code AZ
+        in: path
+        name: az
+        required: true
+        type: string
+      - description: ID Projet
+        in: path
+        name: project_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.SecurityGroup'
+            type: array
+      summary: Liste tous les groupes de sécurité
+      tags:
+      - security-groups
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: ID Organisation
+        in: path
+        name: orga_id
+        required: true
+        type: string
+      - description: Code AZ
+        in: path
+        name: az
+        required: true
+        type: string
+      - description: ID Projet
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - description: Données du groupe de sécurité
+        in: body
+        name: security_group
+        required: true
+        schema:
+          $ref: '#/definitions/models.SecurityGroupRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.SecurityGroup'
+      summary: Crée un groupe de sécurité
+      tags:
+      - security-groups
+  /{orga_id}/{az}/{project_id}/security-groups/{eid}:
+    delete:
+      consumes:
+      - application/json
+      parameters:
+      - description: ID Organisation
+        in: path
+        name: orga_id
+        required: true
+        type: string
+      - description: Code AZ
+        in: path
+        name: az
+        required: true
+        type: string
+      - description: ID Projet
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - description: ID Groupe de sécurité
+        in: path
+        name: eid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+      summary: Supprime un groupe de sécurité
+      tags:
+      - security-groups
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: ID Organisation
+        in: path
+        name: orga_id
+        required: true
+        type: string
+      - description: Code AZ
+        in: path
+        name: az
+        required: true
+        type: string
+      - description: ID Projet
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - description: ID Groupe de sécurité
+        in: path
+        name: eid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.SecurityGroup'
+      summary: Retourne un groupe de sécurité
+      tags:
+      - security-groups
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: ID Organisation
+        in: path
+        name: orga_id
+        required: true
+        type: string
+      - description: Code AZ
+        in: path
+        name: az
+        required: true
+        type: string
+      - description: ID Projet
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - description: ID Groupe de sécurité
+        in: path
+        name: eid
+        required: true
+        type: string
+      - description: Données du groupe de sécurité
+        in: body
+        name: security_group
+        required: true
+        schema:
+          $ref: '#/definitions/models.SecurityGroupRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.SecurityGroup'
+      summary: Met à jour un groupe de sécurité
+      tags:
+      - security-groups
+  /{orga_id}/{az}/{project_id}/ssh-keys:
+    get:
+      description: Renvoie la liste de toutes les clés SSH en appelant l'API SPX.
+      parameters:
+      - description: ID de l'organisation
+        in: path
+        name: orga_id
+        required: true
+        type: string
+      - description: Zone de disponibilité
+        in: path
+        name: az
+        required: true
+        type: string
+      - description: ID du projet
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - description: api-token {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.SSHKey'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Lister les clés SSH
+      tags:
+      - ssh
+    post:
+      consumes:
+      - application/json
+      description: Crée une nouvelle clé SSH en appelant l'API SPX.
+      parameters:
+      - description: ID de l'organisation
+        in: path
+        name: orga_id
+        required: true
+        type: string
+      - description: Zone de disponibilité
+        in: path
+        name: az
+        required: true
+        type: string
+      - description: ID du projet
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - description: SSH Key Request Body
+        in: body
+        name: ssh
+        required: true
+        schema:
+          $ref: '#/definitions/models.SSHKeyRequest'
+      - description: api-token {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.SSHKey'
+      summary: Créer une clé SSH
+      tags:
+      - ssh
+  /{orga_id}/{az}/{project_id}/ssh-keys/{id}:
+    delete:
+      description: Supprime une clé SSH en appelant l'API SPX.
+      parameters:
+      - description: ID de l'organisation
+        in: path
+        name: orga_id
+        required: true
+        type: string
+      - description: Zone de disponibilité
+        in: path
+        name: az
+        required: true
+        type: string
+      - description: ID du projet
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - description: SSH Key ID (Effective ID)
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: api-token {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+      summary: Supprimer une clé SSH
+      tags:
+      - ssh
+    get:
+      description: Récupère les détails d'une clé SSH en appelant l'API SPX.
+      parameters:
+      - description: ID de l'organisation
+        in: path
+        name: orga_id
+        required: true
+        type: string
+      - description: Zone de disponibilité
+        in: path
+        name: az
+        required: true
+        type: string
+      - description: ID du projet
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - description: SSH Key ID (Effective ID)
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: api-token {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.SSHKey'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Récupérer une clé SSH
+      tags:
+      - ssh
+  /{orga_id}/{az}/{project_id}/storage-classes:
+    get:
+      description: Renvoie la liste de toutes les StorageClasses disponibles pour
+        un projet et une AZ donnés.
+      parameters:
+      - description: ID de l'organisation
+        in: path
+        name: orga_id
+        required: true
+        type: string
+      - description: Zone de disponibilité
+        in: path
+        name: az
+        required: true
+        type: string
+      - description: ID du projet
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - description: api-token {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              type: string
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Lister les StorageClasses
+      tags:
+      - disk
+  /{orga_id}/{az}/{project_id}/subnets:
+    get:
+      description: Renvoie la liste de tous les Subnets en appelant l'API SPX.
+      parameters:
+      - description: ID de l'organisation
+        in: path
+        name: orga_id
+        required: true
+        type: string
+      - description: Zone de disponibilité
+        in: path
+        name: az
+        required: true
+        type: string
+      - description: ID du projet
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - description: api-token {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Subnet'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Lister les Subnets
+      tags:
+      - subnet
+    post:
+      consumes:
+      - application/json
+      description: Crée une nouvelle ressource Subnet en appelant l'API SPX. OrgaID,
+        ProjectID et AZ doivent être fournis dans l'URL.
+      parameters:
+      - description: ID de l'organisation
+        in: path
+        name: orga_id
+        required: true
+        type: string
+      - description: Zone de disponibilité
+        in: path
+        name: az
+        required: true
+        type: string
+      - description: ID du projet
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - description: Subnet Request Body
+        in: body
+        name: subnet
+        required: true
+        schema:
+          $ref: '#/definitions/models.SubnetRequest'
+      - description: api-token {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.Subnet'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Créer un Subnet
+      tags:
+      - subnet
+  /{orga_id}/{az}/{project_id}/subnets/{id}:
+    delete:
+      description: Supprime un Subnet en appelant l'API SPX et attend sa disparition
+        réelle.
+      parameters:
+      - description: ID de l'organisation
+        in: path
+        name: orga_id
+        required: true
+        type: string
+      - description: Zone de disponibilité
+        in: path
+        name: az
+        required: true
+        type: string
+      - description: ID du projet
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - description: Subnet ID (Effective ID)
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: api-token {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Supprimer un Subnet
+      tags:
+      - subnet
+    get:
+      description: Récupère les détails d'un Subnet en appelant l'API SPX.
+      parameters:
+      - description: ID de l'organisation
+        in: path
+        name: orga_id
+        required: true
+        type: string
+      - description: Zone de disponibilité
+        in: path
+        name: az
+        required: true
+        type: string
+      - description: ID du projet
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - description: Subnet ID (Effective ID)
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: api-token {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Subnet'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Récupérer un Subnet
+      tags:
+      - subnet
+    put:
+      consumes:
+      - application/json
+      description: Met à jour un Subnet en appelant l'API SPX.
+      parameters:
+      - description: ID de l'organisation
+        in: path
+        name: orga_id
+        required: true
+        type: string
+      - description: Zone de disponibilité
+        in: path
+        name: az
+        required: true
+        type: string
+      - description: ID du projet
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - description: Subnet ID (Effective ID)
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Subnet Request Body
+        in: body
+        name: subnet
+        required: true
+        schema:
+          $ref: '#/definitions/models.SubnetRequest'
+      - description: api-token {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Subnet'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Mettre à jour un Subnet
+      tags:
+      - subnet
+  /{orga_id}/{az}/{project_id}/vm-types:
+    get:
+      consumes:
+      - application/json
+      description: Renvoie la liste de tous les types de VM disponibles pour un projet
+        et une AZ donnés.
+      parameters:
+      - description: ID de l'organisation
+        in: path
+        name: orga_id
+        required: true
+        type: string
+      - description: Code de l'AZ
+        in: path
+        name: az
+        required: true
+        type: string
+      - description: ID du projet
+        in: path
+        name: project_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              type: string
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Liste les types de VM
+      tags:
+      - instances
+  /{orga_id}/{az}/{project_id}/vpcs:
+    get:
+      description: Renvoie la liste de tous les VPCs en appelant l'API SPX. OrgaID,
+        ProjectID et AZ doivent être fournis dans l'URL.
+      parameters:
+      - description: ID de l'organisation
+        in: path
+        name: orga_id
+        required: true
+        type: string
+      - description: Zone de disponibilité
+        in: path
+        name: az
+        required: true
+        type: string
+      - description: ID du projet
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - description: api-token {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.VPC'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Lister les VPCs
+      tags:
+      - vpc
+    post:
+      consumes:
+      - application/json
+      description: Crée une nouvelle ressource VPC en appelant l'API SPX. OrgaID,
+        ProjectID et AZ doivent être fournis dans l'URL.
+      parameters:
+      - description: ID de l'organisation
+        in: path
+        name: orga_id
+        required: true
+        type: string
+      - description: Zone de disponibilité
+        in: path
+        name: az
+        required: true
+        type: string
+      - description: ID du projet
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - description: VPC Request Body
+        in: body
+        name: vpc
+        required: true
+        schema:
+          $ref: '#/definitions/models.VPCRequest'
+      - description: api-token {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.VPC'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Créer un VPC
+      tags:
+      - vpc
+  /{orga_id}/{az}/{project_id}/vpcs/{id}:
+    delete:
+      description: Supprime un VPC en appelant l'API SPX. OrgaID, ProjectID et AZ
+        doivent être fournis dans l'URL.
+      parameters:
+      - description: ID de l'organisation
+        in: path
+        name: orga_id
+        required: true
+        type: string
+      - description: Zone de disponibilité
+        in: path
+        name: az
+        required: true
+        type: string
+      - description: ID du projet
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - description: VPC ID (Effective ID)
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: api-token {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Supprimer un VPC
+      tags:
+      - vpc
+    get:
+      description: Récupère les détails d'un VPC en appelant l'API SPX. OrgaID, ProjectID
+        et AZ doivent être fournis dans l'URL.
+      parameters:
+      - description: ID de l'organisation
+        in: path
+        name: orga_id
+        required: true
+        type: string
+      - description: Zone de disponibilité
+        in: path
+        name: az
+        required: true
+        type: string
+      - description: ID du projet
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - description: VPC ID (Effective ID)
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: api-token {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.VPC'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Récupérer un VPC
+      tags:
+      - vpc
+    put:
+      consumes:
+      - application/json
+      description: Met à jour le nom d'un VPC en appelant l'API SPX. OrgaID, ProjectID
+        et AZ doivent être fournis dans l'URL.
+      parameters:
+      - description: ID de l'organisation
+        in: path
+        name: orga_id
+        required: true
+        type: string
+      - description: Zone de disponibilité
+        in: path
+        name: az
+        required: true
+        type: string
+      - description: ID du projet
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - description: VPC ID (Effective ID)
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: VPC Request Body
+        in: body
+        name: vpc
+        required: true
+        schema:
+          $ref: '#/definitions/models.VPCRequest'
+      - description: api-token {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.VPC'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Mettre à jour un VPC
+      tags:
+      - vpc
+swagger: "2.0"

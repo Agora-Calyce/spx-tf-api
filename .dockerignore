@@ -1,0 +1,14 @@
+# Binaries
+spx-tf-api
+
+# Docker
+Dockerfile
+.dockerignore
+
+# Git
+.git
+.gitignore
+
+# Go
+vendor/
+*.log

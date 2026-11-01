@@ -1,0 +1,6 @@
+.idea/
+bin/
+.junie/
+.env
+/spx-tf-api
+.vscode/

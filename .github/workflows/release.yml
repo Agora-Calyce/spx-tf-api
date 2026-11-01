@@ -1,0 +1,67 @@
+# Publishes the Docker image and the Helm chart to GitHub Container Registry.
+#   - push on main: image `main-<sha>`, chart `0.1.0-<sha>`
+#   - tag `vX.Y.Z`: image `vX.Y.Z`, chart `X.Y.Z`
+# Uses the built-in GITHUB_TOKEN: no secret to configure.
+name: Release
+
+on:
+  push:
+    branches: [main]
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ghcr.io/agora-calyce/spx-tf-api
+  CHART_REPOSITORY: oci://ghcr.io/agora-calyce/charts
+  CHART_PATH: chart
+
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=tag
+            type=sha,prefix=main-,enable=${{ github.ref == 'refs/heads/main' }}
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+  helm:
+    runs-on: ubuntu-latest
+    needs: docker
+    steps:
+      - uses: actions/checkout@v4
+      - uses: azure/setup-helm@v4
+      - name: Log in to GHCR
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | helm registry login "${REGISTRY}" --username "${{ github.actor }}" --password-stdin
+      - name: Package and push chart
+        run: |
+          SHORT_SHA="${GITHUB_SHA::7}"
+          if [ "${GITHUB_REF_TYPE}" = "tag" ]; then
+            CHART_VERSION="${GITHUB_REF_NAME#v}"
+            APP_VERSION="${GITHUB_REF_NAME}"
+          else
+            CHART_VERSION="0.1.0-${SHORT_SHA}"
+            APP_VERSION="main-${SHORT_SHA}"
+          fi
+          helm package "${CHART_PATH}" --version "${CHART_VERSION}" --app-version "${APP_VERSION}" --destination .
+          helm push "spx-tf-api-${CHART_VERSION}.tgz" "${CHART_REPOSITORY}"
