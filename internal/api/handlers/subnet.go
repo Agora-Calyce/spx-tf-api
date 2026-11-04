@@ -14,13 +14,13 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-// SubnetHandler gère les requêtes liées aux Subnets.
+// SubnetHandler handles requests related to Subnets.
 type SubnetHandler struct {
 	configStore     *store.ConfigStore
 	PollingInterval time.Duration
 }
 
-// NewSubnetHandler crée un nouveau SubnetHandler.
+// NewSubnetHandler creates a new SubnetHandler.
 func NewSubnetHandler(configStore *store.ConfigStore) *SubnetHandler {
 	return &SubnetHandler{
 		configStore:     configStore,
@@ -28,32 +28,32 @@ func NewSubnetHandler(configStore *store.ConfigStore) *SubnetHandler {
 	}
 }
 
-// getSPXClient helper pour obtenir un client configuré à partir du header Authorization
+// getSPXClient is a helper to get a client configured from the Authorization header
 func (h *SubnetHandler) getSPXClient(c echo.Context) (*spx.Client, error) {
 	endpoint := h.configStore.GetEndpoint()
 	if endpoint == "" {
-		return nil, echo.NewHTTPError(http.StatusInternalServerError, "Endpoint API non configuré au démarrage")
+		return nil, echo.NewHTTPError(http.StatusInternalServerError, "API endpoint not configured at startup")
 	}
 
 	authHeader := c.Request().Header.Get("Authorization")
 	if authHeader == "" {
-		return nil, echo.NewHTTPError(http.StatusUnauthorized, "Header Authorization manquant")
+		return nil, echo.NewHTTPError(http.StatusUnauthorized, "Missing Authorization header")
 	}
 
 	token := strings.TrimPrefix(authHeader, "api-token ")
 	if token == "" || token == authHeader {
-		return nil, echo.NewHTTPError(http.StatusUnauthorized, "Format du token invalide (attendu: api-token {token})")
+		return nil, echo.NewHTTPError(http.StatusUnauthorized, "Invalid token format (expected: api-token {token})")
 	}
 
 	client, err := spx.NewClient(endpoint, token)
 	if err != nil {
-		return nil, echo.NewHTTPError(http.StatusInternalServerError, "Erreur création client API")
+		return nil, echo.NewHTTPError(http.StatusInternalServerError, "Error creating API client")
 	}
 
 	return client, nil
 }
 
-// mapSubnetFromSPX convertit une réponse SPX en modèle Subnet pour le proxy
+// mapSubnetFromSPX converts an SPX response into a Subnet model for the proxy
 func (h *SubnetHandler) mapSubnetFromSPX(resp *spxmodels.SubnetFullResponse, az string) *models.Subnet {
 	s := &models.Subnet{
 		ID:   resp.EID,
@@ -61,7 +61,7 @@ func (h *SubnetHandler) mapSubnetFromSPX(resp *spxmodels.SubnetFullResponse, az 
 		AZ:   az,
 	}
 
-	// Gestion de la NAT Gateway
+	// NAT Gateway handling
 	if resp.NatGateway.Spec.LanIp != "" {
 		s.NatGateway = true
 		s.NatGatewayIp = resp.NatGateway.Spec.LanIp
@@ -74,7 +74,7 @@ func (h *SubnetHandler) mapSubnetFromSPX(resp *spxmodels.SubnetFullResponse, az 
 	s.Private = spec.Private
 	s.Protocol = spec.Protocol
 
-	// Extraire IPv4 et IPv6 depuis cidrBlock (séparés par une virgule)
+	// Extract IPv4 and IPv6 from cidrBlock (comma-separated)
 	if spec.CIDRBlock != "" {
 		parts := strings.Split(spec.CIDRBlock, ",")
 		for _, part := range parts {
@@ -87,7 +87,7 @@ func (h *SubnetHandler) mapSubnetFromSPX(resp *spxmodels.SubnetFullResponse, az 
 		}
 	}
 
-	// Extraire dns_server depuis DHCPV4Options
+	// Extract dns_server from DHCPV4Options
 	dhcpV4 := []string{}
 	if spec.DHCPV4Options != nil {
 		if opts, ok := spec.DHCPV4Options.([]interface{}); ok {
@@ -107,7 +107,7 @@ func (h *SubnetHandler) mapSubnetFromSPX(resp *spxmodels.SubnetFullResponse, az 
 		}
 	}
 
-	// Extraire dns_server depuis DHCPV6Options
+	// Extract dns_server from DHCPV6Options
 	dhcpV6 := []string{}
 	if spec.DHCPV6Options != nil {
 		if opts, ok := spec.DHCPV6Options.([]interface{}); ok {
@@ -130,15 +130,15 @@ func (h *SubnetHandler) mapSubnetFromSPX(resp *spxmodels.SubnetFullResponse, az 
 	return s
 }
 
-// CreateSubnet crée un nouveau Subnet.
-// @Summary Créer un Subnet
-// @Description Crée une nouvelle ressource Subnet en appelant l'API SPX. OrgaID, ProjectID et AZ doivent être fournis dans l'URL.
+// CreateSubnet creates a new Subnet.
+// @Summary Create a Subnet
+// @Description Creates a new Subnet resource by calling the SPX API. OrgaID, ProjectID and AZ must be provided in the URL.
 // @Tags subnet
 // @Accept json
 // @Produce json
-// @Param orga_id path string true "ID de l'organisation"
-// @Param az path string true "Zone de disponibilité"
-// @Param project_id path string true "ID du projet"
+// @Param orga_id path string true "Organization ID"
+// @Param az path string true "Availability zone"
+// @Param project_id path string true "Project ID"
 // @Param subnet body models.SubnetRequest true "Subnet Request Body"
 // @Param Authorization header string true "api-token {token}"
 // @Success 201 {object} models.Subnet
@@ -152,12 +152,12 @@ func (h *SubnetHandler) CreateSubnet(c echo.Context) error {
 	projectID := c.Param("project_id")
 
 	if orgaID == "" || az == "" || projectID == "" {
-		return c.JSON(http.StatusBadRequest, map[string]string{"error": "orga_id, az et project_id sont requis dans l'URL"})
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": "orga_id, az and project_id are required in the URL"})
 	}
 
 	var req models.SubnetRequest
 	if err := c.Bind(&req); err != nil {
-		return c.JSON(http.StatusBadRequest, map[string]string{"error": "corps de requête invalide"})
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": "invalid request body"})
 	}
 
 	if err := req.Validate(); err != nil {
@@ -182,13 +182,13 @@ func (h *SubnetHandler) CreateSubnet(c echo.Context) error {
 
 	resp, err := client.CreateSubnet(c.Request().Context(), orgaID, az, projectID, spxReq)
 	if err != nil {
-		return c.JSON(spxStatus(err, http.StatusInternalServerError), map[string]string{"error": fmt.Sprintf("Erreur API SPX: %v", err)})
+		return c.JSON(spxStatus(err, http.StatusInternalServerError), map[string]string{"error": fmt.Sprintf("SPX API error: %v", err)})
 	}
 
-	// Récupérer l'objet créé pour avoir les infos complètes et attendre qu'il soit prêt
+	// Fetch the created object to get the full info and wait until it is ready
 	fullResp, err := h.fetchSubnetFromSPXWithRetry(c.Request().Context(), client, orgaID, az, projectID, resp.EID)
 	if err != nil {
-		// En cas de timeout, on renvoie quand même l'objet créé mais sans attendre
+		// On timeout, still return the created object without waiting
 		return c.JSON(http.StatusCreated, &models.Subnet{ID: resp.EID, Name: req.Name, AZ: az})
 	}
 
@@ -227,21 +227,21 @@ func (h *SubnetHandler) fetchSubnetFromSPXWithRetry(ctx context.Context, client 
 		case <-ctx.Done():
 			return nil, ctx.Err()
 		case <-time.After(interval):
-			// Continuer
+			// Continue
 		}
 	}
 
-	return nil, fmt.Errorf("timeout : le subnet n'est pas devenu opérationnel après 2 minutes")
+	return nil, fmt.Errorf("timeout: the subnet did not become operational after 2 minutes")
 }
 
-// GetSubnet récupère un Subnet par son ID.
-// @Summary Récupérer un Subnet
-// @Description Récupère les détails d'un Subnet en appelant l'API SPX.
+// GetSubnet retrieves a Subnet by its ID.
+// @Summary Get a Subnet
+// @Description Retrieves the details of a Subnet by calling the SPX API.
 // @Tags subnet
 // @Produce json
-// @Param orga_id path string true "ID de l'organisation"
-// @Param az path string true "Zone de disponibilité"
-// @Param project_id path string true "ID du projet"
+// @Param orga_id path string true "Organization ID"
+// @Param az path string true "Availability zone"
+// @Param project_id path string true "Project ID"
 // @Param id path string true "Subnet ID (Effective ID)"
 // @Param Authorization header string true "api-token {token}"
 // @Success 200 {object} models.Subnet
@@ -263,21 +263,21 @@ func (h *SubnetHandler) GetSubnet(c echo.Context) error {
 
 	resp, err := h.fetchSubnetFromSPXWithRetry(c.Request().Context(), client, orgaID, az, projectID, id)
 	if err != nil {
-		return c.JSON(spxStatus(err, http.StatusNotFound), map[string]string{"error": "Subnet non trouvé sur SPX ou non opérationnel"})
+		return c.JSON(spxStatus(err, http.StatusNotFound), map[string]string{"error": "Subnet not found on SPX or not operational"})
 	}
 
 	return c.JSON(http.StatusOK, h.mapSubnetFromSPX(resp, az))
 }
 
-// UpdateSubnet met à jour un Subnet existant.
-// @Summary Mettre à jour un Subnet
-// @Description Met à jour un Subnet en appelant l'API SPX.
+// UpdateSubnet updates an existing Subnet.
+// @Summary Update a Subnet
+// @Description Updates a Subnet by calling the SPX API.
 // @Tags subnet
 // @Accept json
 // @Produce json
-// @Param orga_id path string true "ID de l'organisation"
-// @Param az path string true "Zone de disponibilité"
-// @Param project_id path string true "ID du projet"
+// @Param orga_id path string true "Organization ID"
+// @Param az path string true "Availability zone"
+// @Param project_id path string true "Project ID"
 // @Param id path string true "Subnet ID (Effective ID)"
 // @Param subnet body models.SubnetRequest true "Subnet Request Body"
 // @Param Authorization header string true "api-token {token}"
@@ -294,7 +294,7 @@ func (h *SubnetHandler) UpdateSubnet(c echo.Context) error {
 
 	var req models.SubnetRequest
 	if err := c.Bind(&req); err != nil {
-		return c.JSON(http.StatusBadRequest, map[string]string{"error": "corps de requête invalide"})
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": "invalid request body"})
 	}
 
 	if err := req.Validate(); err != nil {
@@ -315,24 +315,24 @@ func (h *SubnetHandler) UpdateSubnet(c echo.Context) error {
 
 	err = client.UpdateSubnet(c.Request().Context(), orgaID, az, projectID, id, spxReq)
 	if err != nil {
-		return c.JSON(spxStatus(err, http.StatusInternalServerError), map[string]string{"error": fmt.Sprintf("Erreur API SPX: %v", err)})
+		return c.JSON(spxStatus(err, http.StatusInternalServerError), map[string]string{"error": fmt.Sprintf("SPX API error: %v", err)})
 	}
 
 	respGet, err := h.fetchSubnetFromSPXWithRetry(c.Request().Context(), client, orgaID, az, projectID, id)
 	if err != nil {
-		return c.JSON(spxStatus(err, http.StatusInternalServerError), map[string]string{"error": fmt.Sprintf("Subnet mis à jour mais erreur lors de la récupération ou non opérationnel: %v", err)})
+		return c.JSON(spxStatus(err, http.StatusInternalServerError), map[string]string{"error": fmt.Sprintf("Subnet updated but error while fetching it or not operational: %v", err)})
 	}
 
 	return c.JSON(http.StatusOK, h.mapSubnetFromSPX(respGet, az))
 }
 
-// DeleteSubnet supprime un Subnet et attend sa suppression effective.
-// @Summary Supprimer un Subnet
-// @Description Supprime un Subnet en appelant l'API SPX et attend sa disparition réelle.
+// DeleteSubnet deletes a Subnet and waits for its actual deletion.
+// @Summary Delete a Subnet
+// @Description Deletes a Subnet by calling the SPX API and waits until it is actually gone.
 // @Tags subnet
-// @Param orga_id path string true "ID de l'organisation"
-// @Param az path string true "Zone de disponibilité"
-// @Param project_id path string true "ID du projet"
+// @Param orga_id path string true "Organization ID"
+// @Param az path string true "Availability zone"
+// @Param project_id path string true "Project ID"
 // @Param id path string true "Subnet ID (Effective ID)"
 // @Param Authorization header string true "api-token {token}"
 // @Success 204 "No Content"
@@ -352,17 +352,17 @@ func (h *SubnetHandler) DeleteSubnet(c echo.Context) error {
 
 	err = client.DeleteSubnet(c.Request().Context(), orgaID, az, projectID, id)
 	if err != nil {
-		return c.JSON(spxStatus(err, http.StatusInternalServerError), map[string]string{"error": fmt.Sprintf("Erreur API SPX lors de la suppression: %v", err)})
+		return c.JSON(spxStatus(err, http.StatusInternalServerError), map[string]string{"error": fmt.Sprintf("SPX API error during deletion: %v", err)})
 	}
 
-	// Polling pour attendre la suppression réelle
+	// Poll to wait for the actual deletion
 	maxRetries := 60 // 60 * 5s = 5 minutes max
 	interval := 5 * time.Second
 
 	for i := 0; i < maxRetries; i++ {
 		_, err := client.GetSubnet(c.Request().Context(), orgaID, az, projectID, id)
 		if err != nil {
-			// On suppose qu'une erreur ici (probablement 404) signifie que l'objet est supprimé
+			// Assume an error here (probably 404) means the object is deleted
 			return c.NoContent(http.StatusNoContent)
 		}
 
@@ -370,21 +370,21 @@ func (h *SubnetHandler) DeleteSubnet(c echo.Context) error {
 		case <-c.Request().Context().Done():
 			return c.Request().Context().Err()
 		case <-time.After(interval):
-			// Continuer la boucle
+			// Continue the loop
 		}
 	}
 
-	return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Timeout : le subnet n'a pas été supprimé après 5 minutes"})
+	return c.JSON(http.StatusInternalServerError, map[string]string{"error": "timeout: the subnet was not deleted after 5 minutes"})
 }
 
-// ListSubnets liste tous les Subnets.
-// @Summary Lister les Subnets
-// @Description Renvoie la liste de tous les Subnets en appelant l'API SPX.
+// ListSubnets lists all Subnets.
+// @Summary List Subnets
+// @Description Returns the list of all Subnets by calling the SPX API.
 // @Tags subnet
 // @Produce json
-// @Param orga_id path string true "ID de l'organisation"
-// @Param az path string true "Zone de disponibilité"
-// @Param project_id path string true "ID du projet"
+// @Param orga_id path string true "Organization ID"
+// @Param az path string true "Availability zone"
+// @Param project_id path string true "Project ID"
 // @Param Authorization header string true "api-token {token}"
 // @Success 200 {array} models.Subnet
 // @Failure 401 {object} map[string]string
@@ -402,7 +402,7 @@ func (h *SubnetHandler) ListSubnets(c echo.Context) error {
 
 	resp, err := client.ListSubnets(c.Request().Context(), orgaID, az, projectID)
 	if err != nil {
-		return c.JSON(spxStatus(err, http.StatusInternalServerError), map[string]string{"error": fmt.Sprintf("Erreur API SPX: %v", err)})
+		return c.JSON(spxStatus(err, http.StatusInternalServerError), map[string]string{"error": fmt.Sprintf("SPX API error: %v", err)})
 	}
 
 	list := make([]*models.Subnet, 0, len(resp))

@@ -7,7 +7,7 @@ import (
 	"net/http"
 )
 
-// GetSSHKey récupère une clé SSH par son EID
+// GetSSHKey retrieves an SSH key by its EID
 func (c *Client) GetSSHKey(ctx context.Context, orgaId, az, projectId, eid string) (*models.SSHKeyFullResponse, error) {
 	path := fmt.Sprintf("/%s/api/spx-ctrl/%s/%s/ssh/%s", orgaId, az, projectId, eid)
 	resp, err := c.do(ctx, http.MethodGet, path, nil, nil)
@@ -23,7 +23,7 @@ func (c *Client) GetSSHKey(ctx context.Context, orgaId, az, projectId, eid strin
 	return &sshKey, nil
 }
 
-// ListSSHKeys récupère la liste des clés SSH pour un projet et une AZ donnés
+// ListSSHKeys retrieves the list of SSH keys for a given project and AZ
 func (c *Client) ListSSHKeys(ctx context.Context, orgaId, az, projectId string) ([]models.SSHKeyFullResponse, error) {
 	path := fmt.Sprintf("/%s/api/spx-ctrl/%s/%s/ssh", orgaId, az, projectId)
 	resp, err := c.do(ctx, http.MethodGet, path, nil, nil)
@@ -39,7 +39,7 @@ func (c *Client) ListSSHKeys(ctx context.Context, orgaId, az, projectId string) 
 	return sshKeys, nil
 }
 
-// CreateSSHKey crée une nouvelle clé SSH
+// CreateSSHKey creates a new SSH key
 func (c *Client) CreateSSHKey(ctx context.Context, orgaId, az, projectId string, body models.CreateSSHKeyBody) (*models.CreateResponse, error) {
 	path := fmt.Sprintf("/%s/api/spx-ctrl/%s/%s/ssh", orgaId, az, projectId)
 	resp, err := c.do(ctx, http.MethodPost, path, body, nil)
@@ -55,7 +55,7 @@ func (c *Client) CreateSSHKey(ctx context.Context, orgaId, az, projectId string,
 	return &createResp, nil
 }
 
-// DeleteSSHKey supprime une clé SSH
+// DeleteSSHKey deletes an SSH key
 func (c *Client) DeleteSSHKey(ctx context.Context, orgaId, az, projectId, eid string) error {
 	path := fmt.Sprintf("/%s/api/spx-ctrl/%s/%s/ssh/%s", orgaId, az, projectId, eid)
 	resp, err := c.do(ctx, http.MethodDelete, path, nil, nil)

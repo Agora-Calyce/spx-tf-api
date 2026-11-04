@@ -22,39 +22,39 @@ func NewSecurityGroupHandler(configStore *store.ConfigStore) *SecurityGroupHandl
 	return &SecurityGroupHandler{configStore: configStore}
 }
 
-// getSPXClient helper pour obtenir un client configuré à partir du header Authorization
+// getSPXClient is a helper to get a client configured from the Authorization header
 func (h *SecurityGroupHandler) getSPXClient(c echo.Context) (*spx.Client, error) {
 	endpoint := h.configStore.GetEndpoint()
 	if endpoint == "" {
-		return nil, echo.NewHTTPError(http.StatusInternalServerError, "Endpoint API non configuré au démarrage")
+		return nil, echo.NewHTTPError(http.StatusInternalServerError, "API endpoint not configured at startup")
 	}
 
 	authHeader := c.Request().Header.Get("Authorization")
 	if authHeader == "" {
-		return nil, echo.NewHTTPError(http.StatusUnauthorized, "Header Authorization manquant")
+		return nil, echo.NewHTTPError(http.StatusUnauthorized, "Missing Authorization header")
 	}
 
 	token := strings.TrimPrefix(authHeader, "api-token ")
 	if token == "" || token == authHeader {
-		return nil, echo.NewHTTPError(http.StatusUnauthorized, "Format du token invalide (attendu: api-token {token})")
+		return nil, echo.NewHTTPError(http.StatusUnauthorized, "Invalid token format (expected: api-token {token})")
 	}
 
 	client, err := spx.NewClient(endpoint, token)
 	if err != nil {
-		return nil, echo.NewHTTPError(http.StatusInternalServerError, "Erreur création client API")
+		return nil, echo.NewHTTPError(http.StatusInternalServerError, "Error creating API client")
 	}
 
 	return client, nil
 }
 
-// ListSecurityGroups liste tous les groupes de sécurité
-// @Summary Liste tous les groupes de sécurité
+// ListSecurityGroups lists all security groups
+// @Summary List all security groups
 // @Tags security-groups
 // @Accept json
 // @Produce json
-// @Param orga_id path string true "ID Organisation"
-// @Param az path string true "Code AZ"
-// @Param project_id path string true "ID Projet"
+// @Param orga_id path string true "Organization ID"
+// @Param az path string true "AZ code"
+// @Param project_id path string true "Project ID"
 // @Success 200 {array} models.SecurityGroup
 // @Router /{orga_id}/{az}/{project_id}/security-groups [get]
 func (h *SecurityGroupHandler) ListSecurityGroups(c echo.Context) error {
@@ -68,7 +68,7 @@ func (h *SecurityGroupHandler) ListSecurityGroups(c echo.Context) error {
 
 	res, err := client.ListSecurityGroups(c.Request().Context(), orgaID, projectID)
 	if err != nil {
-		return echo.NewHTTPError(spxStatus(err, http.StatusInternalServerError), fmt.Sprintf("Impossible de lister les groupes de sécurité : %v", err))
+		return echo.NewHTTPError(spxStatus(err, http.StatusInternalServerError), fmt.Sprintf("Unable to list security groups: %v", err))
 	}
 
 	sgs := make([]models.SecurityGroup, len(res))
@@ -79,15 +79,15 @@ func (h *SecurityGroupHandler) ListSecurityGroups(c echo.Context) error {
 	return c.JSON(http.StatusOK, sgs)
 }
 
-// GetSecurityGroup retourne un groupe de sécurité
-// @Summary Retourne un groupe de sécurité
+// GetSecurityGroup returns a security group
+// @Summary Get a security group
 // @Tags security-groups
 // @Accept json
 // @Produce json
-// @Param orga_id path string true "ID Organisation"
-// @Param az path string true "Code AZ"
-// @Param project_id path string true "ID Projet"
-// @Param eid path string true "ID Groupe de sécurité"
+// @Param orga_id path string true "Organization ID"
+// @Param az path string true "AZ code"
+// @Param project_id path string true "Project ID"
+// @Param eid path string true "Security group ID"
 // @Success 200 {object} models.SecurityGroup
 // @Router /{orga_id}/{az}/{project_id}/security-groups/{eid} [get]
 func (h *SecurityGroupHandler) GetSecurityGroup(c echo.Context) error {
@@ -103,21 +103,21 @@ func (h *SecurityGroupHandler) GetSecurityGroup(c echo.Context) error {
 
 	res, err := client.GetSecurityGroup(c.Request().Context(), orgaID, az, projectID, eid)
 	if err != nil {
-		return echo.NewHTTPError(spxStatus(err, http.StatusNotFound), fmt.Sprintf("Groupe de sécurité non trouvé : %v", err))
+		return echo.NewHTTPError(spxStatus(err, http.StatusNotFound), fmt.Sprintf("Security group not found: %v", err))
 	}
 
 	return c.JSON(http.StatusOK, mapSecurityGroupFromSPX(*res))
 }
 
-// CreateSecurityGroup crée un groupe de sécurité
-// @Summary Crée un groupe de sécurité
+// CreateSecurityGroup creates a security group
+// @Summary Create a security group
 // @Tags security-groups
 // @Accept json
 // @Produce json
-// @Param orga_id path string true "ID Organisation"
-// @Param az path string true "Code AZ"
-// @Param project_id path string true "ID Projet"
-// @Param security_group body models.SecurityGroupRequest true "Données du groupe de sécurité"
+// @Param orga_id path string true "Organization ID"
+// @Param az path string true "AZ code"
+// @Param project_id path string true "Project ID"
+// @Param security_group body models.SecurityGroupRequest true "Security group data"
 // @Success 201 {object} models.SecurityGroup
 // @Router /{orga_id}/{az}/{project_id}/security-groups [post]
 func (h *SecurityGroupHandler) CreateSecurityGroup(c echo.Context) error {
@@ -146,13 +146,13 @@ func (h *SecurityGroupHandler) CreateSecurityGroup(c echo.Context) error {
 
 	res, err := client.CreateSecurityGroup(c.Request().Context(), orgaID, az, projectID, body)
 	if err != nil {
-		return echo.NewHTTPError(spxStatus(err, http.StatusInternalServerError), fmt.Sprintf("Impossible de créer le groupe de sécurité : %v", err))
+		return echo.NewHTTPError(spxStatus(err, http.StatusInternalServerError), fmt.Sprintf("Unable to create the security group: %v", err))
 	}
 
-	// Récupérer l'objet créé pour avoir toutes les infos
+	// Fetch the created object to get all the info
 	created, err := client.GetSecurityGroup(c.Request().Context(), orgaID, az, projectID, res.EID)
 	if err != nil {
-		// Fallback si le Get échoue juste après la création
+		// Fallback if the Get fails right after creation
 		return c.JSON(http.StatusCreated, models.SecurityGroup{
 			ID:          res.EID,
 			Name:        req.Name,
@@ -167,16 +167,16 @@ func (h *SecurityGroupHandler) CreateSecurityGroup(c echo.Context) error {
 	return c.JSON(http.StatusCreated, mapSecurityGroupFromSPX(*created))
 }
 
-// UpdateSecurityGroup met à jour un groupe de sécurité
-// @Summary Met à jour un groupe de sécurité
+// UpdateSecurityGroup updates a security group
+// @Summary Update a security group
 // @Tags security-groups
 // @Accept json
 // @Produce json
-// @Param orga_id path string true "ID Organisation"
-// @Param az path string true "Code AZ"
-// @Param project_id path string true "ID Projet"
-// @Param eid path string true "ID Groupe de sécurité"
-// @Param security_group body models.SecurityGroupRequest true "Données du groupe de sécurité"
+// @Param orga_id path string true "Organization ID"
+// @Param az path string true "AZ code"
+// @Param project_id path string true "Project ID"
+// @Param eid path string true "Security group ID"
+// @Param security_group body models.SecurityGroupRequest true "Security group data"
 // @Success 200 {object} models.SecurityGroup
 // @Router /{orga_id}/{az}/{project_id}/security-groups/{eid} [post]
 func (h *SecurityGroupHandler) UpdateSecurityGroup(c echo.Context) error {
@@ -206,27 +206,27 @@ func (h *SecurityGroupHandler) UpdateSecurityGroup(c echo.Context) error {
 
 	err = client.UpdateSecurityGroup(c.Request().Context(), orgaID, az, projectID, eid, body)
 	if err != nil {
-		return echo.NewHTTPError(spxStatus(err, http.StatusInternalServerError), fmt.Sprintf("Impossible de mettre à jour le groupe de sécurité : %v", err))
+		return echo.NewHTTPError(spxStatus(err, http.StatusInternalServerError), fmt.Sprintf("Unable to update the security group: %v", err))
 	}
 
-	// Récupérer l'objet mis à jour
+	// Fetch the updated object
 	updated, err := client.GetSecurityGroup(c.Request().Context(), orgaID, az, projectID, eid)
 	if err != nil {
-		return echo.NewHTTPError(spxStatus(err, http.StatusInternalServerError), fmt.Sprintf("Impossible de récupérer le groupe de sécurité mis à jour : %v", err))
+		return echo.NewHTTPError(spxStatus(err, http.StatusInternalServerError), fmt.Sprintf("Unable to fetch the updated security group: %v", err))
 	}
 
 	return c.JSON(http.StatusOK, mapSecurityGroupFromSPX(*updated))
 }
 
-// DeleteSecurityGroup supprime un groupe de sécurité
-// @Summary Supprime un groupe de sécurité
+// DeleteSecurityGroup deletes a security group
+// @Summary Delete a security group
 // @Tags security-groups
 // @Accept json
 // @Produce json
-// @Param orga_id path string true "ID Organisation"
-// @Param az path string true "Code AZ"
-// @Param project_id path string true "ID Projet"
-// @Param eid path string true "ID Groupe de sécurité"
+// @Param orga_id path string true "Organization ID"
+// @Param az path string true "AZ code"
+// @Param project_id path string true "Project ID"
+// @Param eid path string true "Security group ID"
 // @Success 204
 // @Router /{orga_id}/{az}/{project_id}/security-groups/{eid} [delete]
 func (h *SecurityGroupHandler) DeleteSecurityGroup(c echo.Context) error {
@@ -242,7 +242,7 @@ func (h *SecurityGroupHandler) DeleteSecurityGroup(c echo.Context) error {
 
 	err = client.DeleteSecurityGroup(c.Request().Context(), orgaID, az, projectID, eid)
 	if err != nil {
-		return echo.NewHTTPError(spxStatus(err, http.StatusInternalServerError), fmt.Sprintf("Impossible de supprimer le groupe de sécurité : %v", err))
+		return echo.NewHTTPError(spxStatus(err, http.StatusInternalServerError), fmt.Sprintf("Unable to delete the security group: %v", err))
 	}
 
 	return c.NoContent(http.StatusNoContent)
@@ -250,7 +250,7 @@ func (h *SecurityGroupHandler) DeleteSecurityGroup(c echo.Context) error {
 
 // --- Conversion proxy -> SPX ---
 
-// mapSecurityGroupSpecToSPX convertit une requête validée vers la spec attendue par l'API SPX
+// mapSecurityGroupSpecToSPX converts a validated request to the spec expected by the SPX API
 func mapSecurityGroupSpecToSPX(req models.SecurityGroupRequest) spxmodels.SecurityGroupSpecBody {
 	spec := spxmodels.SecurityGroupSpecBody{
 		Target:     mapLabelSelectorToSPX(req.Target),
@@ -283,7 +283,7 @@ func mapLabelSelectorToSPX(ls models.LabelSelector) spxmodels.LabelSelector {
 		MatchExpressions: []spxmodels.MatchExpression{},
 	}
 	for _, l := range ls.MatchLabels {
-		// Format déjà vérifié par Validate()
+		// Format already checked by Validate()
 		key, value, _ := models.SplitMatchLabel(l)
 		res.MatchLabels = append(res.MatchLabels, spxmodels.MatchLabel{Key: key, Value: value})
 	}
@@ -335,7 +335,7 @@ func mapSecurityGroupFromSPX(r spxmodels.SecurityGroupFullResponse) models.Secur
 		SubnetIDs:   nonNilStrings(r.SecurityGroup.SubnetEIds),
 	}
 
-	// Filtrage basé sur PolicyTypes
+	// Filtering based on PolicyTypes
 	hasIngress := false
 	hasEgress := false
 	for _, pt := range r.SecurityGroup.Spec.PolicyTypes {
@@ -382,7 +382,7 @@ func mapLabelSelectorFromSPX(spxSelector spxmodels.SPXLabelSelector) models.Labe
 		}
 		res.MatchLabels = append(res.MatchLabels, fmt.Sprintf("%s:%s", k, v))
 	}
-	// Ordre stable (les maps Go ne sont pas ordonnées)
+	// Stable order (Go maps are unordered)
 	sort.Strings(res.MatchLabels)
 
 	for _, exp := range spxSelector.MatchExpressions {
@@ -432,7 +432,7 @@ func mapIngressRulesFromSPX(spxRules []spxmodels.SPXIngressRule) []models.Ingres
 	res := make([]models.IngressRule, len(spxRules))
 	for i, r := range spxRules {
 		allowAll := r.AllowAll
-		// Une règle vide ({}) dans SPX signifie "Tout autoriser"
+		// An empty rule ({}) in SPX means "Allow all"
 		if len(r.Ports) == 0 && len(r.From) == 0 {
 			allowAll = true
 		}
@@ -454,7 +454,7 @@ func mapEgressRulesFromSPX(spxRules []spxmodels.SPXEgressRule) []models.EgressRu
 	res := make([]models.EgressRule, len(spxRules))
 	for i, r := range spxRules {
 		allowAll := r.AllowAll
-		// Une règle vide ({}) dans SPX signifie "Tout autoriser"
+		// An empty rule ({}) in SPX means "Allow all"
 		if len(r.Ports) == 0 && len(r.To) == 0 {
 			allowAll = true
 		}
@@ -472,7 +472,7 @@ func mapEgressRulesFromSPX(spxRules []spxmodels.SPXEgressRule) []models.EgressRu
 	return res
 }
 
-// nonNilStrings retourne une slice vide plutôt que nil (sérialisée en [] et non null)
+// nonNilStrings returns an empty slice rather than nil (serialized as [] and not null)
 func nonNilStrings(s []string) []string {
 	if s == nil {
 		return []string{}

@@ -100,7 +100,7 @@ func TestLoadBalancerHandler_Authorization(t *testing.T) {
 				he, ok := err.(*echo.HTTPError)
 				if ok {
 					assert.Equal(t, http.StatusUnauthorized, he.Code)
-					assert.Contains(t, he.Message.(string), "Header Authorization manquant")
+					assert.Contains(t, he.Message.(string), "Missing Authorization header")
 				}
 			}
 		})

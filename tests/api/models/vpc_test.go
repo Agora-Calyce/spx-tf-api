@@ -13,22 +13,22 @@ func TestVPCRequest_Validate(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name:    "Valide",
+			name:    "Valid",
 			vpcName: "mon-vpc",
 			wantErr: false,
 		},
 		{
-			name:    "Nom vide",
+			name:    "Empty name",
 			vpcName: "",
 			wantErr: true,
 		},
 		{
-			name:    "Nom exactement 63 caractères",
+			name:    "Name exactly 63 characters",
 			vpcName: strings.Repeat("a", 63),
 			wantErr: false,
 		},
 		{
-			name:    "Nom trop long (64 caractères)",
+			name:    "Name too long (64 characters)",
 			vpcName: strings.Repeat("a", 64),
 			wantErr: true,
 		},

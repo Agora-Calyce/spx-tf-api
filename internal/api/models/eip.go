@@ -6,7 +6,7 @@ import (
 	"net"
 )
 
-// Eip représente la ressource EIP pour Terraform.
+// Eip represents the EIP resource for Terraform.
 type Eip struct {
 	ID         string    `json:"id" example:"eip-12345"`
 	Name       string    `json:"name" example:"mon-eip"`
@@ -19,7 +19,7 @@ type Eip struct {
 	Nat        string    `json:"nat" example:"fip"`
 }
 
-// EipDNAT représente une règle DNAT pour un EIP.
+// EipDNAT represents a DNAT rule for an EIP.
 type EipDNAT struct {
 	ExternalPort string `json:"external_port" example:"80"`
 	InternalIP   string `json:"internal_ip" example:"10.0.0.10"`
@@ -27,7 +27,7 @@ type EipDNAT struct {
 	Protocol     string `json:"protocol" example:"tcp"`
 }
 
-// EipRequest représente le corps de la requête pour créer ou mettre à jour un EIP.
+// EipRequest represents the request body to create or update an EIP.
 type EipRequest struct {
 	Name       string    `json:"name" example:"mon-eip"`
 	SubnetEId  string    `json:"subnet_id" example:"subnet-123"`
@@ -36,32 +36,32 @@ type EipRequest struct {
 	DNAT       []EipDNAT `json:"dnat,omitempty"`
 }
 
-// Validate vérifie les contraintes sur l'EIP.
+// Validate checks the constraints on the EIP.
 func (e *EipRequest) Validate() error {
 	if e.Name == "" {
-		return errors.New("le nom est requis")
+		return errors.New("name is required")
 	}
 	if len(e.Name) > 63 {
-		return fmt.Errorf("le nom ne doit pas dépasser 63 caractères (actuel: %d)", len(e.Name))
+		return fmt.Errorf("name must not exceed 63 characters (current: %d)", len(e.Name))
 	}
 	if e.SubnetEId == "" {
-		return errors.New("le subnet_id est requis")
+		return errors.New("subnet_id is required")
 	}
 
 	hasInternalIP := e.InternalIP != ""
 	hasSnatOrDnat := len(e.SNAT) > 0 || len(e.DNAT) > 0
 
 	if !hasInternalIP && !hasSnatOrDnat {
-		return errors.New("vous devez fournir soit une internal_ip, soit des configurations SNAT/DNAT")
+		return errors.New("you must provide either an internal_ip or SNAT/DNAT configurations")
 	}
 	if hasInternalIP && hasSnatOrDnat {
-		return errors.New("vous ne pouvez pas fournir à la fois une internal_ip et des configurations SNAT/DNAT")
+		return errors.New("you cannot provide both an internal_ip and SNAT/DNAT configurations")
 	}
 
 	for _, cidr := range e.SNAT {
 		_, _, err := net.ParseCIDR(cidr)
 		if err != nil {
-			return fmt.Errorf("format CIDR invalide pour SNAT : %s", cidr)
+			return fmt.Errorf("invalid CIDR format for SNAT: %s", cidr)
 		}
 	}
 

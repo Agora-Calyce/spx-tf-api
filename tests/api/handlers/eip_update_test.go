@@ -16,18 +16,18 @@ import (
 )
 
 func TestEipHandler_UpdateEip_Refetch(t *testing.T) {
-	// Setup du mock server pour l'API cliente
+	// Mock server setup for the client API
 	callCount := 0
 	mockServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		callCount++
-		// Premier appel : Update (POST)
+		// First call: Update (POST)
 		if callCount == 1 {
 			assert.Equal(t, http.MethodPost, r.Method)
 			assert.Contains(t, r.URL.Path, "/eip/eip-123")
 			w.WriteHeader(http.StatusOK)
 			return
 		}
-		// Deuxième appel : Get (GET)
+		// Second call: Get (GET)
 		if callCount == 2 {
 			assert.Equal(t, http.MethodGet, r.Method)
 			assert.Contains(t, r.URL.Path, "/eip/eip-123")
@@ -40,13 +40,13 @@ func TestEipHandler_UpdateEip_Refetch(t *testing.T) {
 	}))
 	defer mockServer.Close()
 
-	// Setup de l'API proxy
+	// Proxy API setup
 	e := echo.New()
 	configStore := store.NewConfigStore()
 	configStore.SetEndpoint(mockServer.URL)
 	h := handlers.NewEipHandler(configStore)
 
-	// Corps de la requête de mise à jour
+	// Update request body
 	reqBody, _ := json.Marshal(models.EipRequest{
 		Name:       "new-name-req",
 		SubnetEId:  "subnet-123",
@@ -60,37 +60,37 @@ func TestEipHandler_UpdateEip_Refetch(t *testing.T) {
 	c.SetParamNames("orga_id", "az", "project_id", "id")
 	c.SetParamValues("orga-1", "az1", "proj-1", "eip-123")
 
-	// Exécution
+	// Execution
 	err := h.UpdateEip(c)
 
 	// Assertions
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusOK, rec.Code)
-	assert.Equal(t, 2, callCount, "L'API cliente doit être appelée deux fois (Update puis Get)")
+	assert.Equal(t, 2, callCount, "The client API must be called twice (Update then Get)")
 
 	var resp models.Eip
 	err = json.Unmarshal(rec.Body.Bytes(), &resp)
 	assert.NoError(t, err)
 	assert.Equal(t, "eip-123", resp.ID)
-	assert.Equal(t, "new-name-from-get", resp.Name, "Le nom doit provenir du Get final, pas de la requête")
+	assert.Equal(t, "new-name-from-get", resp.Name, "The name must come from the final Get, not from the request")
 }
 
 func TestEipHandler_CreateEip_Refetch(t *testing.T) {
-	// Setup du mock server pour l'API cliente
+	// Mock server setup for the client API
 	callCount := 0
 	mockServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		callCount++
-		// Premier appel : Create (POST)
+		// First call: Create (POST)
 		if callCount == 1 {
 			assert.Equal(t, http.MethodPost, r.Method)
 			assert.Contains(t, r.URL.Path, "/eip")
-			assert.NotContains(t, r.URL.Path, "/eip/") // Pas d'ID dans le path pour la création
+			assert.NotContains(t, r.URL.Path, "/eip/") // No ID in the path for creation
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusCreated)
 			fmt.Fprint(w, `{"eid": "eip-456"}`)
 			return
 		}
-		// Deuxième appel : Get (GET)
+		// Second call: Get (GET)
 		if callCount == 2 {
 			assert.Equal(t, http.MethodGet, r.Method)
 			assert.Contains(t, r.URL.Path, "/eip/eip-456")
@@ -103,13 +103,13 @@ func TestEipHandler_CreateEip_Refetch(t *testing.T) {
 	}))
 	defer mockServer.Close()
 
-	// Setup de l'API proxy
+	// Proxy API setup
 	e := echo.New()
 	configStore := store.NewConfigStore()
 	configStore.SetEndpoint(mockServer.URL)
 	h := handlers.NewEipHandler(configStore)
 
-	// Corps de la requête de création
+	// Create request body
 	reqBody, _ := json.Marshal(models.EipRequest{
 		Name:       "name-req",
 		SubnetEId:  "subnet-123",
@@ -123,13 +123,13 @@ func TestEipHandler_CreateEip_Refetch(t *testing.T) {
 	c.SetParamNames("orga_id", "az", "project_id")
 	c.SetParamValues("orga-1", "az1", "proj-1")
 
-	// Exécution
+	// Execution
 	err := h.CreateEip(c)
 
 	// Assertions
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusCreated, rec.Code)
-	assert.Equal(t, 2, callCount, "L'API cliente doit être appelée deux fois (Create puis Get)")
+	assert.Equal(t, 2, callCount, "The client API must be called twice (Create then Get)")
 
 	var resp models.Eip
 	err = json.Unmarshal(rec.Body.Bytes(), &resp)

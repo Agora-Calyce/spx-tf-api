@@ -69,5 +69,5 @@ tolerations: []
 
 affinity: {}
 
-# Configuration de l'application
+# Application configuration
 spxApiEndpoint: "https://console.mon-superphenix.net/api"

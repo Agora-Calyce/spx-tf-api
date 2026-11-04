@@ -13,7 +13,7 @@ func TestEipRequest_Validate(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "Valide avec InternalIP",
+			name: "Valid with InternalIP",
 			request: models.EipRequest{
 				Name:       "mon-eip",
 				SubnetEId:  "subnet-123",
@@ -22,7 +22,7 @@ func TestEipRequest_Validate(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "Valide avec SNAT (CIDR)",
+			name: "Valid with SNAT (CIDR)",
 			request: models.EipRequest{
 				Name:      "mon-eip",
 				SubnetEId: "subnet-123",
@@ -31,7 +31,7 @@ func TestEipRequest_Validate(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "Invalide : SNAT n'est pas un CIDR",
+			name: "Invalid: SNAT is not a CIDR",
 			request: models.EipRequest{
 				Name:      "mon-eip",
 				SubnetEId: "subnet-123",
@@ -40,7 +40,7 @@ func TestEipRequest_Validate(t *testing.T) {
 			wantErr: true,
 		},
 		{
-			name: "Valide avec DNAT",
+			name: "Valid with DNAT",
 			request: models.EipRequest{
 				Name:      "mon-eip",
 				SubnetEId: "subnet-123",
@@ -51,7 +51,7 @@ func TestEipRequest_Validate(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "Invalide : les deux fournis",
+			name: "Invalid: both provided",
 			request: models.EipRequest{
 				Name:       "mon-eip",
 				SubnetEId:  "subnet-123",
@@ -61,7 +61,7 @@ func TestEipRequest_Validate(t *testing.T) {
 			wantErr: true,
 		},
 		{
-			name: "Invalide : aucun fourni",
+			name: "Invalid: none provided",
 			request: models.EipRequest{
 				Name:      "mon-eip",
 				SubnetEId: "subnet-123",
@@ -69,7 +69,7 @@ func TestEipRequest_Validate(t *testing.T) {
 			wantErr: true,
 		},
 		{
-			name: "Nom vide",
+			name: "Empty name",
 			request: models.EipRequest{
 				Name:      "",
 				SubnetEId: "subnet-123",
@@ -77,7 +77,7 @@ func TestEipRequest_Validate(t *testing.T) {
 			wantErr: true,
 		},
 		{
-			name: "Nom trop long",
+			name: "Name too long",
 			request: models.EipRequest{
 				Name:      strings.Repeat("a", 64),
 				SubnetEId: "subnet-123",
@@ -85,7 +85,7 @@ func TestEipRequest_Validate(t *testing.T) {
 			wantErr: true,
 		},
 		{
-			name: "Subnet ID vide",
+			name: "Empty subnet ID",
 			request: models.EipRequest{
 				Name:      "mon-eip",
 				SubnetEId: "",

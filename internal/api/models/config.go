@@ -2,15 +2,15 @@ package models
 
 import "fmt"
 
-// Configuration représente les paramètres globaux (Endpoint).
+// Configuration represents the global settings (Endpoint).
 type Configuration struct {
 	Endpoint string `json:"endpoint"`
 }
 
-// Validate vérifie la validité de la configuration globale.
+// Validate checks the validity of the global configuration.
 func (c *Configuration) Validate() error {
 	if c.Endpoint == "" {
-		return fmt.Errorf("endpoint est obligatoire")
+		return fmt.Errorf("endpoint is required")
 	}
 	return nil
 }

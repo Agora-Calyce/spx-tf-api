@@ -87,10 +87,10 @@ func TestSecurityGroupHandler_Mapping(t *testing.T) {
 		assert.Equal(t, "A test security group", sg.Description)
 		assert.Equal(t, []string{"subnet-a", "subnet-b"}, sg.SubnetIDs)
 
-		// Labels système filtrés, format "clé:valeur"
+		// System labels filtered out, "key:value" format
 		assert.Equal(t, []string{"app:test"}, sg.Target.MatchLabels)
 
-		// Expressions système filtrées
+		// System expressions filtered out
 		if assert.Len(t, sg.Target.MatchExpressions, 1) {
 			assert.Equal(t, "env", sg.Target.MatchExpressions[0].Key)
 		}
@@ -98,10 +98,10 @@ func TestSecurityGroupHandler_Mapping(t *testing.T) {
 		if assert.Len(t, sg.Ingress, 1) {
 			ports := sg.Ingress[0].Ports
 			if assert.Len(t, ports, 3) {
-				// Port seul : end_port = port
+				// Port alone: end_port = port
 				assert.Equal(t, models.SgPort{Port: 80, EndPort: 80, Protocol: "TCP"}, ports[0])
 				assert.Equal(t, models.SgPort{Port: 8000, EndPort: 8100, Protocol: "UDP"}, ports[1])
-				// Port Kubernetes sous forme de chaîne (intstr)
+				// Kubernetes port as a string (intstr)
 				assert.Equal(t, models.SgPort{Port: 9090, EndPort: 9090, Protocol: "TCP"}, ports[2])
 			}
 			if assert.Len(t, sg.Ingress[0].From, 2) {
@@ -113,7 +113,7 @@ func TestSecurityGroupHandler_Mapping(t *testing.T) {
 			}
 		}
 
-		// Egress déclaré dans policyTypes mais sans règle : tout refuser
+		// Egress declared in policyTypes but without a rule: deny all
 		if assert.Len(t, sg.Egress, 1) {
 			assert.True(t, sg.Egress[0].DenyAll)
 		}
@@ -132,7 +132,7 @@ func TestSecurityGroupHandler_CreateSecurityGroup(t *testing.T) {
 			_, _ = w.Write([]byte(`{"eid": "sg-new"}`))
 			return
 		}
-		// GET après la création
+		// GET after creation
 		assert.Equal(t, "/org1/api/spx-ctrl/az1/proj1/security-group/sg-new", r.URL.Path)
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
@@ -156,7 +156,7 @@ func TestSecurityGroupHandler_CreateSecurityGroup(t *testing.T) {
 	configStore.SetEndpoint(server.URL)
 	handler := handlers.NewSecurityGroupHandler(configStore)
 
-	// Format envoyé par le provider Terraform : labels "clé:valeur" et ports en chaînes
+	// Format sent by the Terraform provider: "key:value" labels and ports as strings
 	reqBody := `{
 		"name": "new-sg",
 		"description": "New one",
@@ -176,7 +176,7 @@ func TestSecurityGroupHandler_CreateSecurityGroup(t *testing.T) {
 	if assert.NoError(t, handler.CreateSecurityGroup(c)) {
 		assert.Equal(t, http.StatusCreated, rec.Code)
 
-		// Corps envoyé à SPX au format attendu par l'API
+		// Body sent to SPX in the format expected by the API
 		general := sentBody["general"].(map[string]interface{})
 		assert.Equal(t, "new-sg", general["productName"])
 		spec := sentBody["spec"].(map[string]interface{})

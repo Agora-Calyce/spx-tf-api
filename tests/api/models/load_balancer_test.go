@@ -15,7 +15,7 @@ func TestLoadBalancerRequest_Validate(t *testing.T) {
 		msg     string
 	}{
 		{
-			name: "Valide",
+			name: "Valid",
 			request: models.LoadBalancerRequest{
 				Name: "lb-test",
 				VIP:  "198.18.0.1",
@@ -26,7 +26,7 @@ func TestLoadBalancerRequest_Validate(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "Nom manquant",
+			name: "Missing name",
 			request: models.LoadBalancerRequest{
 				VIP: "198.18.0.1",
 				Ports: []models.LoadBalancerPort{
@@ -34,10 +34,10 @@ func TestLoadBalancerRequest_Validate(t *testing.T) {
 				},
 			},
 			wantErr: true,
-			msg:     "le nom est requis",
+			msg:     "name is required",
 		},
 		{
-			name: "VIP manquant",
+			name: "Missing VIP",
 			request: models.LoadBalancerRequest{
 				Name: "lb-test",
 				Ports: []models.LoadBalancerPort{
@@ -45,10 +45,10 @@ func TestLoadBalancerRequest_Validate(t *testing.T) {
 				},
 			},
 			wantErr: true,
-			msg:     "le VIP est requis",
+			msg:     "VIP is required",
 		},
 		{
-			name: "VIP hors range",
+			name: "VIP out of range",
 			request: models.LoadBalancerRequest{
 				Name: "lb-test",
 				VIP:  "10.0.0.1",
@@ -57,10 +57,10 @@ func TestLoadBalancerRequest_Validate(t *testing.T) {
 				},
 			},
 			wantErr: true,
-			msg:     "l'adresse VIP doit appartenir au range 198.18.0.0/16",
+			msg:     "VIP address must be in the 198.18.0.0/16 range",
 		},
 		{
-			name: "VIP invalide",
+			name: "Invalid VIP",
 			request: models.LoadBalancerRequest{
 				Name: "lb-test",
 				VIP:  "not-an-ip",
@@ -69,10 +69,10 @@ func TestLoadBalancerRequest_Validate(t *testing.T) {
 				},
 			},
 			wantErr: true,
-			msg:     "adresse VIP invalide",
+			msg:     "invalid VIP address",
 		},
 		{
-			name: "Mutuellement exclusif",
+			name: "Mutually exclusive",
 			request: models.LoadBalancerRequest{
 				Name: "lb-test",
 				VIP:  "198.18.0.1",
@@ -85,19 +85,19 @@ func TestLoadBalancerRequest_Validate(t *testing.T) {
 				},
 			},
 			wantErr: true,
-			msg:     "les sélecteurs et les endpoints sont mutuellement exclusifs",
+			msg:     "selectors and endpoints are mutually exclusive",
 		},
 		{
-			name: "Ports manquants",
+			name: "Missing ports",
 			request: models.LoadBalancerRequest{
 				Name: "lb-test",
 				VIP:  "198.18.0.1",
 			},
 			wantErr: true,
-			msg:     "au moins un port est requis",
+			msg:     "at least one port is required",
 		},
 		{
-			name: "Protocole invalide",
+			name: "Invalid protocol",
 			request: models.LoadBalancerRequest{
 				Name: "lb-test",
 				VIP:  "198.18.0.1",
@@ -106,10 +106,10 @@ func TestLoadBalancerRequest_Validate(t *testing.T) {
 				},
 			},
 			wantErr: true,
-			msg:     "protocole invalide",
+			msg:     "invalid protocol",
 		},
 		{
-			name: "Valide avec Selectors",
+			name: "Valid with Selectors",
 			request: models.LoadBalancerRequest{
 				Name: "lb-test",
 				VIP:  "198.18.0.1",
@@ -123,7 +123,7 @@ func TestLoadBalancerRequest_Validate(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "Valide avec Endpoints",
+			name: "Valid with Endpoints",
 			request: models.LoadBalancerRequest{
 				Name:      "lb-test",
 				VIP:       "198.18.0.1",

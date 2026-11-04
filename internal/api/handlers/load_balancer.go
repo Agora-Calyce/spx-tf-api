@@ -12,44 +12,44 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-// LoadBalancerHandler gère les requêtes liées aux Load Balancers.
+// LoadBalancerHandler handles requests related to Load Balancers.
 type LoadBalancerHandler struct {
 	configStore *store.ConfigStore
 }
 
-// NewLoadBalancerHandler crée un nouveau LoadBalancerHandler.
+// NewLoadBalancerHandler creates a new LoadBalancerHandler.
 func NewLoadBalancerHandler(configStore *store.ConfigStore) *LoadBalancerHandler {
 	return &LoadBalancerHandler{
 		configStore: configStore,
 	}
 }
 
-// getSPXClient helper pour obtenir un client configuré à partir du header Authorization
+// getSPXClient is a helper to get a client configured from the Authorization header
 func (h *LoadBalancerHandler) getSPXClient(c echo.Context) (*spx.Client, error) {
 	endpoint := h.configStore.GetEndpoint()
 	if endpoint == "" {
-		return nil, echo.NewHTTPError(http.StatusInternalServerError, "Endpoint API non configuré au démarrage")
+		return nil, echo.NewHTTPError(http.StatusInternalServerError, "API endpoint not configured at startup")
 	}
 
 	authHeader := c.Request().Header.Get("Authorization")
 	if authHeader == "" {
-		return nil, echo.NewHTTPError(http.StatusUnauthorized, "Header Authorization manquant")
+		return nil, echo.NewHTTPError(http.StatusUnauthorized, "Missing Authorization header")
 	}
 
 	token := strings.TrimPrefix(authHeader, "api-token ")
 	if token == "" || token == authHeader {
-		return nil, echo.NewHTTPError(http.StatusUnauthorized, "Format du token invalide (attendu: api-token {token})")
+		return nil, echo.NewHTTPError(http.StatusUnauthorized, "Invalid token format (expected: api-token {token})")
 	}
 
 	client, err := spx.NewClient(endpoint, token)
 	if err != nil {
-		return nil, echo.NewHTTPError(http.StatusInternalServerError, "Erreur création client API")
+		return nil, echo.NewHTTPError(http.StatusInternalServerError, "Error creating API client")
 	}
 
 	return client, nil
 }
 
-// CreateLoadBalancer crée un nouveau Load Balancer.
+// CreateLoadBalancer creates a new Load Balancer.
 func (h *LoadBalancerHandler) CreateLoadBalancer(c echo.Context) error {
 	orgaID := c.Param("orga_id")
 	az := c.Param("az")
@@ -57,7 +57,7 @@ func (h *LoadBalancerHandler) CreateLoadBalancer(c echo.Context) error {
 
 	var req models.LoadBalancerRequest
 	if err := c.Bind(&req); err != nil {
-		return c.JSON(http.StatusBadRequest, map[string]string{"error": "corps de requête invalide"})
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": "invalid request body"})
 	}
 
 	if err := req.Validate(); err != nil {
@@ -86,7 +86,7 @@ func (h *LoadBalancerHandler) CreateLoadBalancer(c echo.Context) error {
 
 	resp, err := client.CreateLoadBalancer(c.Request().Context(), orgaID, az, projectID, spxReq)
 	if err != nil {
-		return c.JSON(spxStatus(err, http.StatusInternalServerError), map[string]string{"error": fmt.Sprintf("Erreur API SPX: %v", err)})
+		return c.JSON(spxStatus(err, http.StatusInternalServerError), map[string]string{"error": fmt.Sprintf("SPX API error: %v", err)})
 	}
 
 	lb := &models.LoadBalancer{
@@ -102,7 +102,7 @@ func (h *LoadBalancerHandler) CreateLoadBalancer(c echo.Context) error {
 	return c.JSON(http.StatusCreated, lb)
 }
 
-// GetLoadBalancer récupère un Load Balancer par son ID.
+// GetLoadBalancer retrieves a Load Balancer by its ID.
 func (h *LoadBalancerHandler) GetLoadBalancer(c echo.Context) error {
 	orgaID := c.Param("orga_id")
 	az := c.Param("az")
@@ -116,13 +116,13 @@ func (h *LoadBalancerHandler) GetLoadBalancer(c echo.Context) error {
 
 	resp, err := client.GetLoadBalancer(c.Request().Context(), orgaID, az, projectID, id)
 	if err != nil {
-		return c.JSON(spxStatus(err, http.StatusNotFound), map[string]string{"error": "Load Balancer non trouvé sur SPX"})
+		return c.JSON(spxStatus(err, http.StatusNotFound), map[string]string{"error": "Load Balancer not found on SPX"})
 	}
 
 	return c.JSON(http.StatusOK, h.mapLBFromSPX(resp, az))
 }
 
-// UpdateLoadBalancer met à jour un Load Balancer.
+// UpdateLoadBalancer updates a Load Balancer.
 func (h *LoadBalancerHandler) UpdateLoadBalancer(c echo.Context) error {
 	orgaID := c.Param("orga_id")
 	az := c.Param("az")
@@ -131,7 +131,7 @@ func (h *LoadBalancerHandler) UpdateLoadBalancer(c echo.Context) error {
 
 	var req models.LoadBalancerRequest
 	if err := c.Bind(&req); err != nil {
-		return c.JSON(http.StatusBadRequest, map[string]string{"error": "corps de requête invalide"})
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": "invalid request body"})
 	}
 
 	if err := req.Validate(); err != nil {
@@ -160,7 +160,7 @@ func (h *LoadBalancerHandler) UpdateLoadBalancer(c echo.Context) error {
 
 	err = client.UpdateLoadBalancer(c.Request().Context(), orgaID, az, projectID, id, spxReq)
 	if err != nil {
-		return c.JSON(spxStatus(err, http.StatusInternalServerError), map[string]string{"error": fmt.Sprintf("Erreur API SPX: %v", err)})
+		return c.JSON(spxStatus(err, http.StatusInternalServerError), map[string]string{"error": fmt.Sprintf("SPX API error: %v", err)})
 	}
 
 	respGet, err := client.GetLoadBalancer(c.Request().Context(), orgaID, az, projectID, id)
@@ -179,7 +179,7 @@ func (h *LoadBalancerHandler) UpdateLoadBalancer(c echo.Context) error {
 	return c.JSON(http.StatusOK, h.mapLBFromSPX(respGet, az))
 }
 
-// DeleteLoadBalancer supprime un Load Balancer.
+// DeleteLoadBalancer deletes a Load Balancer.
 func (h *LoadBalancerHandler) DeleteLoadBalancer(c echo.Context) error {
 	orgaID := c.Param("orga_id")
 	az := c.Param("az")
@@ -193,13 +193,13 @@ func (h *LoadBalancerHandler) DeleteLoadBalancer(c echo.Context) error {
 
 	err = client.DeleteLoadBalancer(c.Request().Context(), orgaID, az, projectID, id)
 	if err != nil {
-		return c.JSON(spxStatus(err, http.StatusInternalServerError), map[string]string{"error": fmt.Sprintf("Erreur API SPX lors de la suppression: %v", err)})
+		return c.JSON(spxStatus(err, http.StatusInternalServerError), map[string]string{"error": fmt.Sprintf("SPX API error during deletion: %v", err)})
 	}
 
 	return c.NoContent(http.StatusNoContent)
 }
 
-// ListLoadBalancers liste tous les Load Balancers.
+// ListLoadBalancers lists all Load Balancers.
 func (h *LoadBalancerHandler) ListLoadBalancers(c echo.Context) error {
 	orgaID := c.Param("orga_id")
 	az := c.Param("az")
@@ -212,7 +212,7 @@ func (h *LoadBalancerHandler) ListLoadBalancers(c echo.Context) error {
 
 	resp, err := client.ListLoadBalancers(c.Request().Context(), orgaID, az, projectID)
 	if err != nil {
-		return c.JSON(spxStatus(err, http.StatusInternalServerError), map[string]string{"error": fmt.Sprintf("Erreur API SPX: %v", err)})
+		return c.JSON(spxStatus(err, http.StatusInternalServerError), map[string]string{"error": fmt.Sprintf("SPX API error: %v", err)})
 	}
 
 	list := make([]*models.LoadBalancer, 0, len(resp))
@@ -231,7 +231,7 @@ func (h *LoadBalancerHandler) mapLBFromSPX(spxLB *spxmodels.LoadBalancerFullResp
 		VIP:  spxLB.LoadBalancer.Spec.VIP,
 	}
 
-	// Mapping des sélecteurs (parsing de "key:value")
+	// Selector mapping (parsing "key:value")
 	for _, s := range spxLB.LoadBalancer.Spec.Selector {
 		parts := strings.SplitN(s, ":", 2)
 		if len(parts) == 2 {
@@ -242,10 +242,10 @@ func (h *LoadBalancerHandler) mapLBFromSPX(spxLB *spxmodels.LoadBalancerFullResp
 		}
 	}
 
-	// Mapping des endpoints
+	// Endpoint mapping
 	lb.Endpoints = spxLB.LoadBalancer.Spec.Endpoints
 
-	// Mapping des ports
+	// Port mapping
 	for _, p := range spxLB.LoadBalancer.Spec.Ports {
 		lb.Ports = append(lb.Ports, models.LoadBalancerPort{
 			Name:       p.Name,

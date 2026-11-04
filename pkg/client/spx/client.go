@@ -15,7 +15,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-// Client est le client pour l'API SPX
+// Client is the client for the SPX API
 type Client struct {
 	baseURL    *url.URL
 	httpClient *http.Client
@@ -23,7 +23,7 @@ type Client struct {
 	token      string
 }
 
-// NewClient crée une nouvelle instance du client SPX
+// NewClient creates a new instance of the SPX client
 func NewClient(baseURLStr string, token string) (*Client, error) {
 	baseURL, err := url.Parse(baseURLStr)
 	if err != nil {
@@ -38,10 +38,10 @@ func NewClient(baseURLStr string, token string) (*Client, error) {
 	}, nil
 }
 
-// Do execute une requête HTTP
+// Do executes an HTTP request
 func (c *Client) do(ctx context.Context, method, path string, body interface{}, params url.Values) (*http.Response, error) {
-	// JoinPath conserve le chemin de l'endpoint (ex. "https://host/api") ;
-	// Parse remplacerait ce chemin car path commence par "/".
+	// JoinPath keeps the endpoint path (e.g. "https://host/api");
+	// Parse would replace this path because path starts with "/".
 	u := c.baseURL.JoinPath(path)
 	if params != nil {
 		u.RawQuery = params.Encode()
@@ -55,7 +55,7 @@ func (c *Client) do(ctx context.Context, method, path string, body interface{}, 
 		}
 		bodyReader = bytes.NewReader(jsonBody)
 
-		// Logging du body de la requête en mode debug (formatté)
+		// Log the request body in debug mode (formatted)
 		if c.logger.GetLevel() <= zerolog.DebugLevel {
 			formattedBody, err := json.MarshalIndent(body, "", "  ")
 			if err == nil {
@@ -63,7 +63,7 @@ func (c *Client) do(ctx context.Context, method, path string, body interface{}, 
 					Str("method", method).
 					Str("url", u.String()).
 					Str("body", string(formattedBody)).
-					Msg("Body de la requête API cliente")
+					Msg("Client API request body")
 			}
 		}
 	}
@@ -81,7 +81,7 @@ func (c *Client) do(ctx context.Context, method, path string, body interface{}, 
 	c.logger.Info().
 		Str("method", method).
 		Str("url", u.String()).
-		Msg("Appel API cliente")
+		Msg("Client API call")
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
@@ -89,11 +89,11 @@ func (c *Client) do(ctx context.Context, method, path string, body interface{}, 
 			Err(err).
 			Str("method", method).
 			Str("url", u.String()).
-			Msg("Échec de l'appel API cliente")
+			Msg("Client API call failed")
 		return nil, err
 	}
 
-	// Logging du body en mode debug
+	// Log the body in debug mode
 	if c.logger.GetLevel() <= zerolog.DebugLevel {
 		bodyBytes, err := io.ReadAll(resp.Body)
 		if err == nil {
@@ -102,8 +102,8 @@ func (c *Client) do(ctx context.Context, method, path string, body interface{}, 
 				Str("url", u.String()).
 				Int("status_code", resp.StatusCode).
 				Str("body", string(bodyBytes)).
-				Msg("Body de la réponse API cliente")
-			// On remet le body pour la suite
+				Msg("Client API response body")
+			// Restore the body for what follows
 			resp.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
 		}
 	}
@@ -112,12 +112,12 @@ func (c *Client) do(ctx context.Context, method, path string, body interface{}, 
 		Str("method", method).
 		Str("url", u.String()).
 		Int("status_code", resp.StatusCode).
-		Msg("Réponse API cliente")
+		Msg("Client API response")
 
 	return resp, nil
 }
 
-// APIError est l'erreur renvoyée quand l'API SPX répond avec un statut >= 400
+// APIError is the error returned when the SPX API responds with a status >= 400
 type APIError struct {
 	StatusCode int
 	Body       string
@@ -127,7 +127,7 @@ func (e *APIError) Error() string {
 	return fmt.Sprintf("API error (status %d): %s", e.StatusCode, e.Body)
 }
 
-// StatusCode renvoie le statut HTTP de la réponse SPX contenue dans err, ou 0 si err n'en contient pas
+// StatusCode returns the HTTP status of the SPX response held in err, or 0 if err holds none
 func StatusCode(err error) int {
 	var apiErr *APIError
 	if errors.As(err, &apiErr) {

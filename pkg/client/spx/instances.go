@@ -8,7 +8,7 @@ import (
 	"github.com/Agora-Calyce/spx-tf-api/pkg/client/spx/models"
 )
 
-// ListInstances récupère la liste des instances pour un projet et une AZ donnés
+// ListInstances retrieves the list of instances for a given project and AZ
 func (c *Client) ListInstances(ctx context.Context, orgaID, az, projectID string) ([]models.InstanceFullResponse, error) {
 	path := fmt.Sprintf("/%s/api/spx-ctrl/%s/%s/instance", orgaID, az, projectID)
 	resp, err := c.do(ctx, http.MethodGet, path, nil, nil)
@@ -24,7 +24,7 @@ func (c *Client) ListInstances(ctx context.Context, orgaID, az, projectID string
 	return instances, nil
 }
 
-// CreateInstance crée une nouvelle instance
+// CreateInstance creates a new instance
 func (c *Client) CreateInstance(ctx context.Context, orgaID, az, projectID string, body *models.CreateInstanceBody) (*models.CreateResponse, error) {
 	path := fmt.Sprintf("/%s/api/spx-ctrl/%s/%s/instance", orgaID, az, projectID)
 	resp, err := c.do(ctx, http.MethodPost, path, body, nil)
@@ -40,7 +40,7 @@ func (c *Client) CreateInstance(ctx context.Context, orgaID, az, projectID strin
 	return &createResp, nil
 }
 
-// GetInstance récupère une instance par son ID effectif
+// GetInstance retrieves an instance by its ID
 func (c *Client) GetInstance(ctx context.Context, orgaID, az, projectID, effectiveID string) (*models.InstanceFullResponse, error) {
 	path := fmt.Sprintf("/%s/api/spx-ctrl/%s/%s/instance/%s", orgaID, az, projectID, effectiveID)
 	resp, err := c.do(ctx, http.MethodGet, path, nil, nil)
@@ -56,7 +56,7 @@ func (c *Client) GetInstance(ctx context.Context, orgaID, az, projectID, effecti
 	return &instance, nil
 }
 
-// UpdateInstance met à jour une instance existante
+// UpdateInstance updates an existing instance
 func (c *Client) UpdateInstance(ctx context.Context, orgaID, az, projectID, effectiveID string, body *models.UpdateInstanceBody) error {
 	path := fmt.Sprintf("/%s/api/spx-ctrl/%s/%s/instance/%s", orgaID, az, projectID, effectiveID)
 	resp, err := c.do(ctx, http.MethodPost, path, body, nil)
@@ -67,7 +67,7 @@ func (c *Client) UpdateInstance(ctx context.Context, orgaID, az, projectID, effe
 	return decodeResponse(resp, nil)
 }
 
-// DeleteInstance supprime une instance
+// DeleteInstance deletes an instance
 func (c *Client) DeleteInstance(ctx context.Context, orgaID, az, projectID, effectiveID string) error {
 	path := fmt.Sprintf("/%s/api/spx-ctrl/%s/%s/instance/%s", orgaID, az, projectID, effectiveID)
 	resp, err := c.do(ctx, http.MethodDelete, path, nil, nil)

@@ -11,8 +11,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// L'endpoint SPX peut contenir un chemin (ex. "https://console.mon-superphenix.net/api") :
-// il doit préfixer le chemin de chaque appel.
+// The SPX endpoint may contain a path (e.g. "https://console.mon-superphenix.net/api"):
+// it must prefix the path of every call.
 func TestClient_KeepsEndpointPath(t *testing.T) {
 	for _, suffix := range []string{"", "/", "/api", "/api/"} {
 		t.Run("endpoint"+suffix, func(t *testing.T) {

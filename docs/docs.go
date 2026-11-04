@@ -17,32 +17,32 @@ const docTemplate = `{
     "paths": {
         "/{orga_id}/{az}/{project_id}/disks": {
             "get": {
-                "description": "Renvoie la liste de tous les disques en appelant l'API SPX.",
+                "description": "Returns the list of all disks by calling the SPX API.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "disk"
                 ],
-                "summary": "Lister les disques",
+                "summary": "List disks",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "ID de l'organisation",
+                        "description": "Organization ID",
                         "name": "orga_id",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "Zone de disponibilité",
+                        "description": "Availability zone",
                         "name": "az",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "ID du projet",
+                        "description": "Project ID",
                         "name": "project_id",
                         "in": "path",
                         "required": true
@@ -95,7 +95,7 @@ const docTemplate = `{
                 }
             },
             "post": {
-                "description": "Crée une nouvelle ressource disque en appelant l'API SPX.",
+                "description": "Creates a new disk resource by calling the SPX API.",
                 "consumes": [
                     "application/json"
                 ],
@@ -105,25 +105,25 @@ const docTemplate = `{
                 "tags": [
                     "disk"
                 ],
-                "summary": "Créer un disque",
+                "summary": "Create a disk",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "ID de l'organisation",
+                        "description": "Organization ID",
                         "name": "orga_id",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "Zone de disponibilité",
+                        "description": "Availability zone",
                         "name": "az",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "ID du projet",
+                        "description": "Project ID",
                         "name": "project_id",
                         "in": "path",
                         "required": true
@@ -184,32 +184,32 @@ const docTemplate = `{
         },
         "/{orga_id}/{az}/{project_id}/disks/{id}": {
             "get": {
-                "description": "Récupère les détails d'un disque en appelant l'API SPX.",
+                "description": "Retrieves the details of a disk by calling the SPX API.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "disk"
                 ],
-                "summary": "Récupérer un disque",
+                "summary": "Get a disk",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "ID de l'organisation",
+                        "description": "Organization ID",
                         "name": "orga_id",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "Zone de disponibilité",
+                        "description": "Availability zone",
                         "name": "az",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "ID du projet",
+                        "description": "Project ID",
                         "name": "project_id",
                         "in": "path",
                         "required": true
@@ -275,7 +275,7 @@ const docTemplate = `{
                 }
             },
             "put": {
-                "description": "Met à jour le nom d'un disque en appelant l'API SPX.",
+                "description": "Updates the name of a disk by calling the SPX API.",
                 "consumes": [
                     "application/json"
                 ],
@@ -285,25 +285,25 @@ const docTemplate = `{
                 "tags": [
                     "disk"
                 ],
-                "summary": "Mettre à jour un disque",
+                "summary": "Update a disk",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "ID de l'organisation",
+                        "description": "Organization ID",
                         "name": "orga_id",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "Zone de disponibilité",
+                        "description": "Availability zone",
                         "name": "az",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "ID du projet",
+                        "description": "Project ID",
                         "name": "project_id",
                         "in": "path",
                         "required": true
@@ -378,29 +378,29 @@ const docTemplate = `{
                 }
             },
             "delete": {
-                "description": "Supprime un disque en appelant l'API SPX.",
+                "description": "Deletes a disk by calling the SPX API.",
                 "tags": [
                     "disk"
                 ],
-                "summary": "Supprimer un disque",
+                "summary": "Delete a disk",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "ID de l'organisation",
+                        "description": "Organization ID",
                         "name": "orga_id",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "Zone de disponibilité",
+                        "description": "Availability zone",
                         "name": "az",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "ID du projet",
+                        "description": "Project ID",
                         "name": "project_id",
                         "in": "path",
                         "required": true
@@ -465,32 +465,32 @@ const docTemplate = `{
         },
         "/{orga_id}/{az}/{project_id}/eips": {
             "get": {
-                "description": "Renvoie la liste de tous les EIPs en appelant l'API SPX.",
+                "description": "Returns the list of all EIPs by calling the SPX API.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "eip"
                 ],
-                "summary": "Lister les EIPs",
+                "summary": "List EIPs",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "ID de l'organisation",
+                        "description": "Organization ID",
                         "name": "orga_id",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "Zone de disponibilité",
+                        "description": "Availability zone",
                         "name": "az",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "ID du projet",
+                        "description": "Project ID",
                         "name": "project_id",
                         "in": "path",
                         "required": true
@@ -534,7 +534,7 @@ const docTemplate = `{
                 }
             },
             "post": {
-                "description": "Crée une nouvelle ressource EIP en appelant l'API SPX.",
+                "description": "Creates a new EIP resource by calling the SPX API.",
                 "consumes": [
                     "application/json"
                 ],
@@ -544,25 +544,25 @@ const docTemplate = `{
                 "tags": [
                     "eip"
                 ],
-                "summary": "Créer un EIP",
+                "summary": "Create an EIP",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "ID de l'organisation",
+                        "description": "Organization ID",
                         "name": "orga_id",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "Zone de disponibilité",
+                        "description": "Availability zone",
                         "name": "az",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "ID du projet",
+                        "description": "Project ID",
                         "name": "project_id",
                         "in": "path",
                         "required": true
@@ -623,32 +623,32 @@ const docTemplate = `{
         },
         "/{orga_id}/{az}/{project_id}/eips/{id}": {
             "get": {
-                "description": "Récupère les détails d'un EIP en appelant l'API SPX.",
+                "description": "Retrieves the details of an EIP by calling the SPX API.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "eip"
                 ],
-                "summary": "Récupérer un EIP",
+                "summary": "Get an EIP",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "ID de l'organisation",
+                        "description": "Organization ID",
                         "name": "orga_id",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "Zone de disponibilité",
+                        "description": "Availability zone",
                         "name": "az",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "ID du projet",
+                        "description": "Project ID",
                         "name": "project_id",
                         "in": "path",
                         "required": true
@@ -705,7 +705,7 @@ const docTemplate = `{
                 }
             },
             "put": {
-                "description": "Met à jour un EIP en appelant l'API SPX.",
+                "description": "Updates an EIP by calling the SPX API.",
                 "consumes": [
                     "application/json"
                 ],
@@ -715,25 +715,25 @@ const docTemplate = `{
                 "tags": [
                     "eip"
                 ],
-                "summary": "Mettre à jour un EIP",
+                "summary": "Update an EIP",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "ID de l'organisation",
+                        "description": "Organization ID",
                         "name": "orga_id",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "Zone de disponibilité",
+                        "description": "Availability zone",
                         "name": "az",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "ID du projet",
+                        "description": "Project ID",
                         "name": "project_id",
                         "in": "path",
                         "required": true
@@ -799,29 +799,29 @@ const docTemplate = `{
                 }
             },
             "delete": {
-                "description": "Supprime un EIP en appelant l'API SPX et attend sa disparition réelle.",
+                "description": "Deletes an EIP by calling the SPX API and waits until it is actually gone.",
                 "tags": [
                     "eip"
                 ],
-                "summary": "Supprimer un EIP",
+                "summary": "Delete an EIP",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "ID de l'organisation",
+                        "description": "Organization ID",
                         "name": "orga_id",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "Zone de disponibilité",
+                        "description": "Availability zone",
                         "name": "az",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "ID du projet",
+                        "description": "Project ID",
                         "name": "project_id",
                         "in": "path",
                         "required": true
@@ -877,25 +877,25 @@ const docTemplate = `{
                 "tags": [
                     "security-groups"
                 ],
-                "summary": "Liste tous les groupes de sécurité",
+                "summary": "List all security groups",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "ID Organisation",
+                        "description": "Organization ID",
                         "name": "orga_id",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "Code AZ",
+                        "description": "AZ code",
                         "name": "az",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "ID Projet",
+                        "description": "Project ID",
                         "name": "project_id",
                         "in": "path",
                         "required": true
@@ -923,31 +923,31 @@ const docTemplate = `{
                 "tags": [
                     "security-groups"
                 ],
-                "summary": "Crée un groupe de sécurité",
+                "summary": "Create a security group",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "ID Organisation",
+                        "description": "Organization ID",
                         "name": "orga_id",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "Code AZ",
+                        "description": "AZ code",
                         "name": "az",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "ID Projet",
+                        "description": "Project ID",
                         "name": "project_id",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "Données du groupe de sécurité",
+                        "description": "Security group data",
                         "name": "security_group",
                         "in": "body",
                         "required": true,
@@ -977,32 +977,32 @@ const docTemplate = `{
                 "tags": [
                     "security-groups"
                 ],
-                "summary": "Retourne un groupe de sécurité",
+                "summary": "Get a security group",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "ID Organisation",
+                        "description": "Organization ID",
                         "name": "orga_id",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "Code AZ",
+                        "description": "AZ code",
                         "name": "az",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "ID Projet",
+                        "description": "Project ID",
                         "name": "project_id",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "ID Groupe de sécurité",
+                        "description": "Security group ID",
                         "name": "eid",
                         "in": "path",
                         "required": true
@@ -1027,38 +1027,38 @@ const docTemplate = `{
                 "tags": [
                     "security-groups"
                 ],
-                "summary": "Met à jour un groupe de sécurité",
+                "summary": "Update a security group",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "ID Organisation",
+                        "description": "Organization ID",
                         "name": "orga_id",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "Code AZ",
+                        "description": "AZ code",
                         "name": "az",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "ID Projet",
+                        "description": "Project ID",
                         "name": "project_id",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "ID Groupe de sécurité",
+                        "description": "Security group ID",
                         "name": "eid",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "Données du groupe de sécurité",
+                        "description": "Security group data",
                         "name": "security_group",
                         "in": "body",
                         "required": true,
@@ -1086,32 +1086,32 @@ const docTemplate = `{
                 "tags": [
                     "security-groups"
                 ],
-                "summary": "Supprime un groupe de sécurité",
+                "summary": "Delete a security group",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "ID Organisation",
+                        "description": "Organization ID",
                         "name": "orga_id",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "Code AZ",
+                        "description": "AZ code",
                         "name": "az",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "ID Projet",
+                        "description": "Project ID",
                         "name": "project_id",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "ID Groupe de sécurité",
+                        "description": "Security group ID",
                         "name": "eid",
                         "in": "path",
                         "required": true
@@ -1126,32 +1126,32 @@ const docTemplate = `{
         },
         "/{orga_id}/{az}/{project_id}/ssh-keys": {
             "get": {
-                "description": "Renvoie la liste de toutes les clés SSH en appelant l'API SPX.",
+                "description": "Returns the list of all SSH keys by calling the SPX API.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "ssh"
                 ],
-                "summary": "Lister les clés SSH",
+                "summary": "List SSH keys",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "ID de l'organisation",
+                        "description": "Organization ID",
                         "name": "orga_id",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "Zone de disponibilité",
+                        "description": "Availability zone",
                         "name": "az",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "ID du projet",
+                        "description": "Project ID",
                         "name": "project_id",
                         "in": "path",
                         "required": true
@@ -1186,7 +1186,7 @@ const docTemplate = `{
                 }
             },
             "post": {
-                "description": "Crée une nouvelle clé SSH en appelant l'API SPX.",
+                "description": "Creates a new SSH key by calling the SPX API.",
                 "consumes": [
                     "application/json"
                 ],
@@ -1196,25 +1196,25 @@ const docTemplate = `{
                 "tags": [
                     "ssh"
                 ],
-                "summary": "Créer une clé SSH",
+                "summary": "Create an SSH key",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "ID de l'organisation",
+                        "description": "Organization ID",
                         "name": "orga_id",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "Zone de disponibilité",
+                        "description": "Availability zone",
                         "name": "az",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "ID du projet",
+                        "description": "Project ID",
                         "name": "project_id",
                         "in": "path",
                         "required": true
@@ -1248,32 +1248,32 @@ const docTemplate = `{
         },
         "/{orga_id}/{az}/{project_id}/ssh-keys/{id}": {
             "get": {
-                "description": "Récupère les détails d'une clé SSH en appelant l'API SPX.",
+                "description": "Retrieves the details of an SSH key by calling the SPX API.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "ssh"
                 ],
-                "summary": "Récupérer une clé SSH",
+                "summary": "Get an SSH key",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "ID de l'organisation",
+                        "description": "Organization ID",
                         "name": "orga_id",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "Zone de disponibilité",
+                        "description": "Availability zone",
                         "name": "az",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "ID du projet",
+                        "description": "Project ID",
                         "name": "project_id",
                         "in": "path",
                         "required": true
@@ -1312,29 +1312,29 @@ const docTemplate = `{
                 }
             },
             "delete": {
-                "description": "Supprime une clé SSH en appelant l'API SPX.",
+                "description": "Deletes an SSH key by calling the SPX API.",
                 "tags": [
                     "ssh"
                 ],
-                "summary": "Supprimer une clé SSH",
+                "summary": "Delete an SSH key",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "ID de l'organisation",
+                        "description": "Organization ID",
                         "name": "orga_id",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "Zone de disponibilité",
+                        "description": "Availability zone",
                         "name": "az",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "ID du projet",
+                        "description": "Project ID",
                         "name": "project_id",
                         "in": "path",
                         "required": true
@@ -1363,32 +1363,32 @@ const docTemplate = `{
         },
         "/{orga_id}/{az}/{project_id}/storage-classes": {
             "get": {
-                "description": "Renvoie la liste de toutes les StorageClasses disponibles pour un projet et une AZ donnés.",
+                "description": "Returns the list of all StorageClasses available for a given project and AZ.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "disk"
                 ],
-                "summary": "Lister les StorageClasses",
+                "summary": "List StorageClasses",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "ID de l'organisation",
+                        "description": "Organization ID",
                         "name": "orga_id",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "Zone de disponibilité",
+                        "description": "Availability zone",
                         "name": "az",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "ID du projet",
+                        "description": "Project ID",
                         "name": "project_id",
                         "in": "path",
                         "required": true
@@ -1443,32 +1443,32 @@ const docTemplate = `{
         },
         "/{orga_id}/{az}/{project_id}/subnets": {
             "get": {
-                "description": "Renvoie la liste de tous les Subnets en appelant l'API SPX.",
+                "description": "Returns the list of all Subnets by calling the SPX API.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "subnet"
                 ],
-                "summary": "Lister les Subnets",
+                "summary": "List Subnets",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "ID de l'organisation",
+                        "description": "Organization ID",
                         "name": "orga_id",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "Zone de disponibilité",
+                        "description": "Availability zone",
                         "name": "az",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "ID du projet",
+                        "description": "Project ID",
                         "name": "project_id",
                         "in": "path",
                         "required": true
@@ -1512,7 +1512,7 @@ const docTemplate = `{
                 }
             },
             "post": {
-                "description": "Crée une nouvelle ressource Subnet en appelant l'API SPX. OrgaID, ProjectID et AZ doivent être fournis dans l'URL.",
+                "description": "Creates a new Subnet resource by calling the SPX API. OrgaID, ProjectID and AZ must be provided in the URL.",
                 "consumes": [
                     "application/json"
                 ],
@@ -1522,25 +1522,25 @@ const docTemplate = `{
                 "tags": [
                     "subnet"
                 ],
-                "summary": "Créer un Subnet",
+                "summary": "Create a Subnet",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "ID de l'organisation",
+                        "description": "Organization ID",
                         "name": "orga_id",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "Zone de disponibilité",
+                        "description": "Availability zone",
                         "name": "az",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "ID du projet",
+                        "description": "Project ID",
                         "name": "project_id",
                         "in": "path",
                         "required": true
@@ -1601,32 +1601,32 @@ const docTemplate = `{
         },
         "/{orga_id}/{az}/{project_id}/subnets/{id}": {
             "get": {
-                "description": "Récupère les détails d'un Subnet en appelant l'API SPX.",
+                "description": "Retrieves the details of a Subnet by calling the SPX API.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "subnet"
                 ],
-                "summary": "Récupérer un Subnet",
+                "summary": "Get a Subnet",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "ID de l'organisation",
+                        "description": "Organization ID",
                         "name": "orga_id",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "Zone de disponibilité",
+                        "description": "Availability zone",
                         "name": "az",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "ID du projet",
+                        "description": "Project ID",
                         "name": "project_id",
                         "in": "path",
                         "required": true
@@ -1692,7 +1692,7 @@ const docTemplate = `{
                 }
             },
             "put": {
-                "description": "Met à jour un Subnet en appelant l'API SPX.",
+                "description": "Updates a Subnet by calling the SPX API.",
                 "consumes": [
                     "application/json"
                 ],
@@ -1702,25 +1702,25 @@ const docTemplate = `{
                 "tags": [
                     "subnet"
                 ],
-                "summary": "Mettre à jour un Subnet",
+                "summary": "Update a Subnet",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "ID de l'organisation",
+                        "description": "Organization ID",
                         "name": "orga_id",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "Zone de disponibilité",
+                        "description": "Availability zone",
                         "name": "az",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "ID du projet",
+                        "description": "Project ID",
                         "name": "project_id",
                         "in": "path",
                         "required": true
@@ -1786,29 +1786,29 @@ const docTemplate = `{
                 }
             },
             "delete": {
-                "description": "Supprime un Subnet en appelant l'API SPX et attend sa disparition réelle.",
+                "description": "Deletes a Subnet by calling the SPX API and waits until it is actually gone.",
                 "tags": [
                     "subnet"
                 ],
-                "summary": "Supprimer un Subnet",
+                "summary": "Delete a Subnet",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "ID de l'organisation",
+                        "description": "Organization ID",
                         "name": "orga_id",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "Zone de disponibilité",
+                        "description": "Availability zone",
                         "name": "az",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "ID du projet",
+                        "description": "Project ID",
                         "name": "project_id",
                         "in": "path",
                         "required": true
@@ -1855,7 +1855,7 @@ const docTemplate = `{
         },
         "/{orga_id}/{az}/{project_id}/vm-types": {
             "get": {
-                "description": "Renvoie la liste de tous les types de VM disponibles pour un projet et une AZ donnés.",
+                "description": "Returns the list of all VM types available for a given project and AZ.",
                 "consumes": [
                     "application/json"
                 ],
@@ -1865,25 +1865,25 @@ const docTemplate = `{
                 "tags": [
                     "instances"
                 ],
-                "summary": "Liste les types de VM",
+                "summary": "List VM types",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "ID de l'organisation",
+                        "description": "Organization ID",
                         "name": "orga_id",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "Code de l'AZ",
+                        "description": "AZ code",
                         "name": "az",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "ID du projet",
+                        "description": "Project ID",
                         "name": "project_id",
                         "in": "path",
                         "required": true
@@ -1922,32 +1922,32 @@ const docTemplate = `{
         },
         "/{orga_id}/{az}/{project_id}/vpcs": {
             "get": {
-                "description": "Renvoie la liste de tous les VPCs en appelant l'API SPX. OrgaID, ProjectID et AZ doivent être fournis dans l'URL.",
+                "description": "Returns the list of all VPCs by calling the SPX API. OrgaID, ProjectID and AZ must be provided in the URL.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "vpc"
                 ],
-                "summary": "Lister les VPCs",
+                "summary": "List VPCs",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "ID de l'organisation",
+                        "description": "Organization ID",
                         "name": "orga_id",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "Zone de disponibilité",
+                        "description": "Availability zone",
                         "name": "az",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "ID du projet",
+                        "description": "Project ID",
                         "name": "project_id",
                         "in": "path",
                         "required": true
@@ -2000,7 +2000,7 @@ const docTemplate = `{
                 }
             },
             "post": {
-                "description": "Crée une nouvelle ressource VPC en appelant l'API SPX. OrgaID, ProjectID et AZ doivent être fournis dans l'URL.",
+                "description": "Creates a new VPC resource by calling the SPX API. OrgaID, ProjectID and AZ must be provided in the URL.",
                 "consumes": [
                     "application/json"
                 ],
@@ -2010,25 +2010,25 @@ const docTemplate = `{
                 "tags": [
                     "vpc"
                 ],
-                "summary": "Créer un VPC",
+                "summary": "Create a VPC",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "ID de l'organisation",
+                        "description": "Organization ID",
                         "name": "orga_id",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "Zone de disponibilité",
+                        "description": "Availability zone",
                         "name": "az",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "ID du projet",
+                        "description": "Project ID",
                         "name": "project_id",
                         "in": "path",
                         "required": true
@@ -2089,32 +2089,32 @@ const docTemplate = `{
         },
         "/{orga_id}/{az}/{project_id}/vpcs/{id}": {
             "get": {
-                "description": "Récupère les détails d'un VPC en appelant l'API SPX. OrgaID, ProjectID et AZ doivent être fournis dans l'URL.",
+                "description": "Retrieves the details of a VPC by calling the SPX API. OrgaID, ProjectID and AZ must be provided in the URL.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "vpc"
                 ],
-                "summary": "Récupérer un VPC",
+                "summary": "Get a VPC",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "ID de l'organisation",
+                        "description": "Organization ID",
                         "name": "orga_id",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "Zone de disponibilité",
+                        "description": "Availability zone",
                         "name": "az",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "ID du projet",
+                        "description": "Project ID",
                         "name": "project_id",
                         "in": "path",
                         "required": true
@@ -2180,7 +2180,7 @@ const docTemplate = `{
                 }
             },
             "put": {
-                "description": "Met à jour le nom d'un VPC en appelant l'API SPX. OrgaID, ProjectID et AZ doivent être fournis dans l'URL.",
+                "description": "Updates the name of a VPC by calling the SPX API. OrgaID, ProjectID and AZ must be provided in the URL.",
                 "consumes": [
                     "application/json"
                 ],
@@ -2190,25 +2190,25 @@ const docTemplate = `{
                 "tags": [
                     "vpc"
                 ],
-                "summary": "Mettre à jour un VPC",
+                "summary": "Update a VPC",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "ID de l'organisation",
+                        "description": "Organization ID",
                         "name": "orga_id",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "Zone de disponibilité",
+                        "description": "Availability zone",
                         "name": "az",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "ID du projet",
+                        "description": "Project ID",
                         "name": "project_id",
                         "in": "path",
                         "required": true
@@ -2283,29 +2283,29 @@ const docTemplate = `{
                 }
             },
             "delete": {
-                "description": "Supprime un VPC en appelant l'API SPX. OrgaID, ProjectID et AZ doivent être fournis dans l'URL.",
+                "description": "Deletes a VPC by calling the SPX API. OrgaID, ProjectID and AZ must be provided in the URL.",
                 "tags": [
                     "vpc"
                 ],
-                "summary": "Supprimer un VPC",
+                "summary": "Delete a VPC",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "ID de l'organisation",
+                        "description": "Organization ID",
                         "name": "orga_id",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "Zone de disponibilité",
+                        "description": "Availability zone",
                         "name": "az",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "ID du projet",
+                        "description": "Project ID",
                         "name": "project_id",
                         "in": "path",
                         "required": true
@@ -2523,12 +2523,12 @@ const docTemplate = `{
                     "example": "10.0.0.254"
                 },
                 "policy": {
-                    "description": "policyDst ou policySrc",
+                    "description": "policyDst or policySrc",
                     "type": "string",
                     "example": "policyDst"
                 },
                 "route_table": {
-                    "description": "EID du subnet",
+                    "description": "Subnet EID",
                     "type": "string",
                     "example": "subnet-eid"
                 }
@@ -2572,7 +2572,7 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "labels": {
-                    "description": "Labels au format \"user.superphenix.net/clé:valeur\"",
+                    "description": "Labels in the \"user.superphenix.net/key:value\" format",
                     "type": "array",
                     "items": {
                         "type": "string"
@@ -2782,7 +2782,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "subnetIds": {
-                    "description": "SubnetIDs limite le groupe de sécurité à ces subnets (vide = tous les subnets)",
+                    "description": "SubnetIDs limits the security group to these subnets (empty = all subnets)",
                     "type": "array",
                     "items": {
                         "type": "string"
@@ -2918,7 +2918,7 @@ const docTemplate = `{
                     "example": "mon-vpc-reseau"
                 },
                 "static_routes": {
-                    "description": "StaticRoutes (mise à jour uniquement) : nil = routes existantes conservées, [] = toutes supprimées",
+                    "description": "StaticRoutes (update only): nil = existing routes kept, [] = all removed",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/internal_api_models.StaticRoute"
@@ -2936,7 +2936,7 @@ var SwaggerInfo = &swag.Spec{
 	BasePath:         "/",
 	Schemes:          []string{},
 	Title:            "SPX TF Proxy API",
-	Description:      "API Proxy pour la génération d'un provider Terraform.",
+	Description:      "Proxy API used to build a Terraform provider.",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",

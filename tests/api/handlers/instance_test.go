@@ -17,7 +17,7 @@ import (
 )
 
 func TestInstanceHandler_Mapping(t *testing.T) {
-	// Mock du serveur SPX
+	// SPX server mock
 	spxServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		assert.Equal(t, "/orga1/api/spx-ctrl/az1/proj1/instance/inst1", r.URL.Path)
 		assert.Equal(t, "GET", r.Method)
@@ -176,7 +176,7 @@ func TestInstanceHandler_Mapping(t *testing.T) {
 }
 
 func TestInstanceHandler_ListVMTypes(t *testing.T) {
-	// Mock du serveur SPX
+	// SPX server mock
 	spxServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		assert.Equal(t, "/orga1/api/spx-ctrl/az1/proj1/vm-type", r.URL.Path)
 		assert.Equal(t, "GET", r.Method)
@@ -211,7 +211,7 @@ func TestInstanceHandler_ListVMTypes(t *testing.T) {
 }
 
 func TestInstanceHandler_CreateInstance(t *testing.T) {
-	// Mock du serveur SPX
+	// SPX server mock
 	callCount := 0
 	spxServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
@@ -382,7 +382,7 @@ func TestInstanceHandler_UpstreamFields(t *testing.T) {
 	}
 	assert.Equal(t, http.StatusCreated, rec.Code)
 
-	// Corps envoyé à SPX
+	// Body sent to SPX
 	assert.Equal(t, []interface{}{"virtio-win"}, sentBody["containerDisks"])
 	nw := sentBody["network"].([]interface{})[0].(map[string]interface{})
 	assert.Equal(t, false, nw["enabled"])
@@ -394,9 +394,9 @@ func TestInstanceHandler_UpstreamFields(t *testing.T) {
 	efi := adv["firmware"].(map[string]interface{})["bootloader"].(map[string]interface{})["efi"].(map[string]interface{})
 	assert.Equal(t, false, efi["secureBoot"])
 	_, hasEnabled := efi["enabled"]
-	assert.False(t, hasEnabled, "un champ nil (hérité) ne doit pas être envoyé")
+	assert.False(t, hasEnabled, "a nil (inherited) field must not be sent")
 
-	// Relecture
+	// Read back
 	var inst models.Instance
 	assert.NoError(t, json.Unmarshal(rec.Body.Bytes(), &inst))
 	assert.Equal(t, []string{"virtio-win"}, inst.ContainerDisks)
@@ -408,13 +408,13 @@ func TestInstanceHandler_UpstreamFields(t *testing.T) {
 	}
 	if assert.NotNil(t, inst.Advanced) {
 		assert.True(t, *inst.Advanced.TPM.Enabled)
-		assert.True(t, *inst.Advanced.EFI.Enabled, "bloc EFI présent => EFI activé")
+		assert.True(t, *inst.Advanced.EFI.Enabled, "EFI block present => EFI enabled")
 		assert.False(t, *inst.Advanced.EFI.SecureBoot)
 		assert.Nil(t, inst.Advanced.EFI.Persistent)
 	}
 }
 
-// Sans container_disks ni advanced, rien ne doit être envoyé (comportement par défaut de SPX)
+// Without container_disks or advanced, nothing must be sent (SPX default behavior)
 func TestInstanceHandler_UpstreamFields_OmittedByDefault(t *testing.T) {
 	var rawBody map[string]interface{}
 	spxServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -448,7 +448,7 @@ func TestInstanceHandler_UpstreamFields_OmittedByDefault(t *testing.T) {
 
 	if assert.NoError(t, h.UpdateInstance(c)) {
 		_, hasCD := rawBody["containerDisks"]
-		assert.False(t, hasCD, "containerDisks nil => montages conservés côté SPX")
+		assert.False(t, hasCD, "containerDisks nil => mounts kept on the SPX side")
 		_, hasAdv := rawBody["advanced"]
 		assert.False(t, hasAdv)
 
@@ -469,7 +469,7 @@ func TestInstanceRequest_Validate_MAC(t *testing.T) {
 	assert.NoError(t, req.Validate())
 }
 
-// L'API SPX ne renvoie plus vm.spec.disks : les disques sont reconstruits depuis le template KubeVirt
+// The SPX API no longer returns vm.spec.disks: disks are rebuilt from the KubeVirt template
 func TestInstanceHandler_DisksFromTemplate(t *testing.T) {
 	spxResponse := `{
 		"eid": "inst1",

@@ -16,7 +16,7 @@ import (
 )
 
 func TestEipHandler_GetEip_Mapping(t *testing.T) {
-	// Données de réponse SPX simulées
+	// Simulated SPX response data
 	spxResponse := `{
 		"eid": "eip-789",
 		"productName": "eip-complex",
@@ -72,7 +72,7 @@ func TestEipHandler_GetEip_Mapping(t *testing.T) {
 	c.SetParamNames("orga_id", "az", "project_id", "id")
 	c.SetParamValues("orga-1", "az1", "proj-1", "eip-789")
 
-	// Exécution
+	// Execution
 	err := h.GetEip(c)
 
 	// Assertions
@@ -83,7 +83,7 @@ func TestEipHandler_GetEip_Mapping(t *testing.T) {
 	err = json.Unmarshal(rec.Body.Bytes(), &resp)
 	assert.NoError(t, err)
 
-	// Vérification du mapping
+	// Check the mapping
 	assert.Equal(t, "eip-789", resp.ID)
 	assert.Equal(t, "eip-complex", resp.Name)
 	assert.Equal(t, "10.0.0.10", resp.InternalIP)
@@ -98,7 +98,7 @@ func TestEipHandler_GetEip_Mapping(t *testing.T) {
 }
 
 func TestEipHandler_GetEip_NewMapping(t *testing.T) {
-	// Données de réponse SPX simulées avec le nouveau format pour snat et dnat
+	// Simulated SPX response data with the new format for snat and dnat
 	spxResponse := `{
 		"eid": "eip-789",
 		"productName": "eip-complex-v2",
@@ -149,7 +149,7 @@ func TestEipHandler_GetEip_NewMapping(t *testing.T) {
 	c.SetParamNames("orga_id", "az", "project_id", "id")
 	c.SetParamValues("orga-1", "az1", "proj-1", "eip-789")
 
-	// Exécution
+	// Execution
 	err := h.GetEip(c)
 
 	// Assertions
@@ -160,7 +160,7 @@ func TestEipHandler_GetEip_NewMapping(t *testing.T) {
 	err = json.Unmarshal(rec.Body.Bytes(), &resp)
 	assert.NoError(t, err)
 
-	// Vérification du mapping
+	// Check the mapping
 	assert.Equal(t, "eip-789", resp.ID)
 	assert.Equal(t, "10.11.12.0/24", resp.SNAT[0])
 	assert.Len(t, resp.DNAT, 1)
@@ -171,7 +171,7 @@ func TestEipHandler_GetEip_NewMapping(t *testing.T) {
 }
 
 func TestEipHandler_GetEip_FallbackMapping(t *testing.T) {
-	// Données de réponse SPX simulées sans fip mais avec eip.status.externalIP
+	// Simulated SPX response data without fip but with eip.status.externalIP
 	spxResponse := `{
 		"eid": "eip-001",
 		"productName": "eip-fallback",
@@ -206,7 +206,7 @@ func TestEipHandler_GetEip_FallbackMapping(t *testing.T) {
 	c.SetParamNames("orga_id", "az", "project_id", "id")
 	c.SetParamValues("orga-1", "az1", "proj-1", "eip-001")
 
-	// Exécution
+	// Execution
 	err := h.GetEip(c)
 
 	// Assertions
@@ -217,13 +217,13 @@ func TestEipHandler_GetEip_FallbackMapping(t *testing.T) {
 	err = json.Unmarshal(rec.Body.Bytes(), &resp)
 	assert.NoError(t, err)
 
-	// Vérification du mapping (fallback sur eip.status)
+	// Check the mapping (fallback to eip.status)
 	assert.Equal(t, "eip-001", resp.ID)
 	assert.Equal(t, "1.1.1.1", resp.ExternalIP)
 }
 
 func TestEipHandler_GetEip_FipSpecInternalIPMapping(t *testing.T) {
-	// Données de réponse SPX simulées avec internalIp dans fip.spec
+	// Simulated SPX response data with internalIp in fip.spec
 	spxResponse := `{
 		"eid": "eip-123",
 		"productName": "test-eip",
@@ -257,7 +257,7 @@ func TestEipHandler_GetEip_FipSpecInternalIPMapping(t *testing.T) {
 	c.SetParamNames("orga_id", "az", "project_id", "id")
 	c.SetParamValues("orga-1", "az1", "proj-1", "eip-123")
 
-	// Exécution
+	// Execution
 	err := h.GetEip(c)
 
 	// Assertions
@@ -268,13 +268,13 @@ func TestEipHandler_GetEip_FipSpecInternalIPMapping(t *testing.T) {
 	err = json.Unmarshal(rec.Body.Bytes(), &resp)
 	assert.NoError(t, err)
 
-	// Vérification du mapping
-	assert.Equal(t, "10.20.30.40", resp.InternalIP, "Doit récupérer internal_ip depuis fip.spec.internalIp")
+	// Check the mapping
+	assert.Equal(t, "10.20.30.40", resp.InternalIP, "Must read internal_ip from fip.spec.internalIp")
 	assert.Equal(t, "1.2.3.4", resp.ExternalIP)
 }
 
 func TestEipHandler_GetEip_ProductTypeEipMapping(t *testing.T) {
-	// Données de réponse SPX simulées avec productTypeId == "eip"
+	// Simulated SPX response data with productTypeId == "eip"
 	spxResponse := `{
 		"eid": "eip-123",
 		"productName": "mon-eip-type-eip",
@@ -313,7 +313,7 @@ func TestEipHandler_GetEip_ProductTypeEipMapping(t *testing.T) {
 	c.SetParamNames("orga_id", "az", "project_id", "id")
 	c.SetParamValues("orga-1", "az1", "proj-1", "eip-123")
 
-	// Exécution
+	// Execution
 	err := h.GetEip(c)
 
 	// Assertions
@@ -324,7 +324,7 @@ func TestEipHandler_GetEip_ProductTypeEipMapping(t *testing.T) {
 	err = json.Unmarshal(rec.Body.Bytes(), &resp)
 	assert.NoError(t, err)
 
-	// Vérification du mapping spécifique au type "eip"
+	// Check the mapping specific to the "eip" type
 	assert.Equal(t, "eip-123", resp.ID)
 	assert.Equal(t, "10.0.0.5", resp.InternalIP)
 	assert.Equal(t, "spx-id-dp", resp.SubnetEId)
@@ -333,7 +333,7 @@ func TestEipHandler_GetEip_ProductTypeEipMapping(t *testing.T) {
 }
 
 func TestEipHandler_GetEip_RetryLogic(t *testing.T) {
-	// Premier appel sans status, second avec status
+	// First call without status, second with status
 	calls := 0
 	mockServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		calls++
@@ -341,7 +341,7 @@ func TestEipHandler_GetEip_RetryLogic(t *testing.T) {
 		w.WriteHeader(http.StatusOK)
 
 		if calls == 1 {
-			// Pas de status prêt au premier appel
+			// No ready status on the first call
 			fmt.Fprint(w, `{
 				"eid": "eip-retry",
 				"productName": "eip-retry",
@@ -352,7 +352,7 @@ func TestEipHandler_GetEip_RetryLogic(t *testing.T) {
 				}
 			}`)
 		} else {
-			// Status prêt au second appel
+			// Ready status on the second call
 			fmt.Fprint(w, `{
 				"eid": "eip-retry",
 				"productName": "eip-retry",
@@ -375,7 +375,7 @@ func TestEipHandler_GetEip_RetryLogic(t *testing.T) {
 	configStore := store.NewConfigStore()
 	configStore.SetEndpoint(mockServer.URL)
 	h := handlers.NewEipHandler(configStore)
-	h.PollingInterval = 1 * time.Millisecond // Intervalle court pour le test
+	h.PollingInterval = 1 * time.Millisecond // Short interval for the test
 
 	req := httptest.NewRequest(http.MethodGet, "/orga-1/az1/proj-1/eips/eip-retry", nil)
 	req.Header.Set("Authorization", "api-token secret-token")
@@ -384,13 +384,13 @@ func TestEipHandler_GetEip_RetryLogic(t *testing.T) {
 	c.SetParamNames("orga_id", "az", "project_id", "id")
 	c.SetParamValues("orga-1", "az1", "proj-1", "eip-retry")
 
-	// Exécution
+	// Execution
 	err := h.GetEip(c)
 
 	// Assertions
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusOK, rec.Code)
-	assert.Equal(t, 2, calls, "Devrait avoir fait 2 tentatives")
+	assert.Equal(t, 2, calls, "Should have made 2 attempts")
 
 	var resp models.Eip
 	err = json.Unmarshal(rec.Body.Bytes(), &resp)
@@ -399,7 +399,7 @@ func TestEipHandler_GetEip_RetryLogic(t *testing.T) {
 }
 
 func TestEipHandler_GetEip_FipInternalIpMapping(t *testing.T) {
-	// Données de réponse SPX simulées avec fip.status.internalIp
+	// Simulated SPX response data with fip.status.internalIp
 	spxResponse := `{
 		"eid": "eip-fip",
 		"productName": "eip-fip",
@@ -431,7 +431,7 @@ func TestEipHandler_GetEip_FipInternalIpMapping(t *testing.T) {
 	c.SetParamNames("orga_id", "az", "project_id", "id")
 	c.SetParamValues("orga-1", "az1", "proj-1", "eip-fip")
 
-	// Exécution
+	// Execution
 	err := h.GetEip(c)
 
 	// Assertions
@@ -442,13 +442,13 @@ func TestEipHandler_GetEip_FipInternalIpMapping(t *testing.T) {
 	err = json.Unmarshal(rec.Body.Bytes(), &resp)
 	assert.NoError(t, err)
 
-	// Vérification du mapping (depuis fip.status)
+	// Check the mapping (from fip.status)
 	assert.Equal(t, "10.20.30.40", resp.InternalIP)
 	assert.Equal(t, "5.5.5.5", resp.ExternalIP)
 }
 
 func TestEipHandler_GetEip_MultiNatMapping(t *testing.T) {
-	// Données de réponse SPX simulées avec nat multi-valeurs
+	// Simulated SPX response data with multi-value nat
 	spxResponse := `{
 		"eid": "eip-multi",
 		"productTypeId": "eip",
@@ -480,7 +480,7 @@ func TestEipHandler_GetEip_MultiNatMapping(t *testing.T) {
 	c.SetParamNames("orga_id", "az", "project_id", "id")
 	c.SetParamValues("orga-1", "az1", "proj-1", "eip-multi")
 
-	// Exécution
+	// Execution
 	err := h.GetEip(c)
 
 	// Assertions

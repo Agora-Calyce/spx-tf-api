@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-// Disk représente la ressource Disk pour Terraform.
+// Disk represents the Disk resource for Terraform.
 type Disk struct {
 	ID           string      `json:"id" example:"disk-12345"`
 	Name         string      `json:"name" example:"mon-disque"`
@@ -16,7 +16,7 @@ type Disk struct {
 	Labels       []string    `json:"labels"`
 }
 
-// DiskSource représente la source d'un disque
+// DiskSource represents the source of a disk
 type DiskSource struct {
 	Type     string `json:"type" example:"blank"` // blank, http, snapshot, clone, registry
 	URL      string `json:"url,omitempty" example:"http://example.com/image.qcow2"`
@@ -24,36 +24,36 @@ type DiskSource struct {
 	Snapshot string `json:"snapshot,omitempty" example:"snapshot-eid"`
 }
 
-// DiskRequest représente le corps de la requête pour créer ou mettre à jour un Disk.
+// DiskRequest represents the request body to create or update a Disk.
 type DiskRequest struct {
 	Name         string      `json:"name" example:"mon-disque"`
 	Size         int         `json:"size" example:"10"`
 	StorageClass string      `json:"storage_class" example:"standard"`
 	Source       *DiskSource `json:"source,omitempty"`
-	// Labels au format "user.superphenix.net/clé:valeur"
+	// Labels in the "user.superphenix.net/key:value" format
 	Labels []string `json:"labels"`
 }
 
-// Validate vérifie les contraintes sur le Disk.
+// Validate checks the constraints on the Disk.
 func (d *DiskRequest) Validate() error {
 	if d.Name == "" {
-		return errors.New("le nom est requis")
+		return errors.New("name is required")
 	}
 	if len(d.Name) > 63 {
-		return fmt.Errorf("le nom ne doit pas dépasser 63 caractères (actuel: %d)", len(d.Name))
+		return fmt.Errorf("name must not exceed 63 characters (current: %d)", len(d.Name))
 	}
 	if d.Size <= 0 {
-		return errors.New("la taille (size) doit être supérieure à 0")
+		return errors.New("size must be greater than 0")
 	}
 	if err := ValidateCustomLabels(d.Labels); err != nil {
 		return err
 	}
 	if d.StorageClass == "" {
-		return errors.New("la storage_class est requise")
+		return errors.New("storage_class is required")
 	}
 
 	if d.Source == nil {
-		return errors.New("la source est requise")
+		return errors.New("source is required")
 	}
 
 	switch d.Source.Type {
@@ -61,18 +61,18 @@ func (d *DiskRequest) Validate() error {
 		// OK
 	case "http", "registry":
 		if d.Source.URL == "" {
-			return fmt.Errorf("l'url est obligatoire pour le type %s", d.Source.Type)
+			return fmt.Errorf("url is required for type %s", d.Source.Type)
 		}
 	case "clone":
 		if d.Source.Clone == "" {
-			return errors.New("le champ clone est obligatoire pour le type clone")
+			return errors.New("the clone field is required for type clone")
 		}
 	case "snapshot":
 		if d.Source.Snapshot == "" {
-			return errors.New("le champ snapshot est obligatoire pour le type snapshot")
+			return errors.New("the snapshot field is required for type snapshot")
 		}
 	default:
-		return fmt.Errorf("type de source invalide: %s (valeurs possibles: blank, http, snapshot, clone, registry)", d.Source.Type)
+		return fmt.Errorf("invalid source type: %s (possible values: blank, http, snapshot, clone, registry)", d.Source.Type)
 	}
 
 	return nil

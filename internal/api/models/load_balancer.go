@@ -6,7 +6,7 @@ import (
 	"net"
 )
 
-// LoadBalancer représente la ressource Load Balancer pour Terraform.
+// LoadBalancer represents the Load Balancer resource for Terraform.
 type LoadBalancer struct {
 	ID        string             `json:"id"`
 	Name      string             `json:"name"`
@@ -17,13 +17,13 @@ type LoadBalancer struct {
 	Ports     []LoadBalancerPort `json:"ports"`
 }
 
-// LBSelector représente un sélecteur pour un Load Balancer.
+// LBSelector represents a selector for a Load Balancer.
 type LBSelector struct {
 	Key   string `json:"key"`
 	Value string `json:"value"`
 }
 
-// LoadBalancerPort représente un port pour un Load Balancer.
+// LoadBalancerPort represents a port for a Load Balancer.
 type LoadBalancerPort struct {
 	Name       string `json:"name,omitempty"`
 	Port       int32  `json:"port"`
@@ -31,7 +31,7 @@ type LoadBalancerPort struct {
 	Protocol   string `json:"protocol"`
 }
 
-// LoadBalancerRequest représente le corps de la requête pour créer ou mettre à jour un LB.
+// LoadBalancerRequest represents the request body to create or update an LB.
 type LoadBalancerRequest struct {
 	Name      string             `json:"name"`
 	VIP       string             `json:"vip"`
@@ -40,40 +40,40 @@ type LoadBalancerRequest struct {
 	Ports     []LoadBalancerPort `json:"ports"`
 }
 
-// Validate vérifie la validité de la requête.
+// Validate checks the validity of the request.
 func (r *LoadBalancerRequest) Validate() error {
 	if r.Name == "" {
-		return errors.New("le nom est requis")
+		return errors.New("name is required")
 	}
 	if len(r.Name) > 63 {
-		return fmt.Errorf("le nom ne doit pas dépasser 63 caractères (actuel: %d)", len(r.Name))
+		return fmt.Errorf("name must not exceed 63 characters (current: %d)", len(r.Name))
 	}
 	if r.VIP == "" {
-		return errors.New("le VIP est requis")
+		return errors.New("VIP is required")
 	}
 	ip := net.ParseIP(r.VIP)
 	if ip == nil {
-		return fmt.Errorf("adresse VIP invalide: %s", r.VIP)
+		return fmt.Errorf("invalid VIP address: %s", r.VIP)
 	}
 	_, cidr, _ := net.ParseCIDR("198.18.0.0/16")
 	if !cidr.Contains(ip) {
-		return fmt.Errorf("l'adresse VIP doit appartenir au range 198.18.0.0/16 (actuel: %s)", r.VIP)
+		return fmt.Errorf("VIP address must be in the 198.18.0.0/16 range (current: %s)", r.VIP)
 	}
 	if len(r.Selectors) > 0 && len(r.Endpoints) > 0 {
-		return errors.New("les sélecteurs et les endpoints sont mutuellement exclusifs")
+		return errors.New("selectors and endpoints are mutually exclusive")
 	}
 	if len(r.Ports) == 0 {
-		return errors.New("au moins un port est requis")
+		return errors.New("at least one port is required")
 	}
 	for _, p := range r.Ports {
 		if p.Port <= 0 || p.Port > 65535 {
-			return fmt.Errorf("port invalide: %d", p.Port)
+			return fmt.Errorf("invalid port: %d", p.Port)
 		}
 		if p.TargetPort <= 0 || p.TargetPort > 65535 {
-			return fmt.Errorf("targetPort invalide: %d", p.TargetPort)
+			return fmt.Errorf("invalid targetPort: %d", p.TargetPort)
 		}
 		if p.Protocol != "TCP" && p.Protocol != "UDP" {
-			return fmt.Errorf("protocole invalide: %s (doit être TCP ou UDP)", p.Protocol)
+			return fmt.Errorf("invalid protocol: %s (must be TCP or UDP)", p.Protocol)
 		}
 	}
 	return nil
