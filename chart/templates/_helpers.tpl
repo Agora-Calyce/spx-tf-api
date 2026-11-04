@@ -46,14 +46,3 @@ Selector labels
 app.kubernetes.io/name: {{ include "spx-tf-api.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
-
-{{/*
-Create the name of the service account to use
-*/}}
-{{- define "spx-tf-api.serviceAccountName" -}}
-{{- if .Values.serviceAccount.create }}
-{{- default (include "spx-tf-api.fullname" .) .Values.serviceAccount.name }}
-{{- else }}
-{{- default "default" .Values.serviceAccount.name }}
-{{- end }}
-{{- end }}
