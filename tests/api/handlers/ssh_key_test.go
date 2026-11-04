@@ -162,7 +162,7 @@ func TestSSHKeyHandler_AuthorizationHeader(t *testing.T) {
 	h := handlers.NewSSHKeyHandler(configStore)
 
 	req := httptest.NewRequest(http.MethodGet, "/orga1/az1/proj1/ssh-keys/ssh1", nil)
-	// PAS DE HEADER AUTHORIZATION
+	// NO AUTHORIZATION HEADER
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
 	c.SetParamNames("orga_id", "az", "project_id", "id")

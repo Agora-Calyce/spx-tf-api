@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-// VPC représente la ressource VPC pour Terraform.
+// VPC represents the VPC resource for Terraform.
 type VPC struct {
 	ID           string        `json:"id" example:"vpc-12345"`
 	Name         string        `json:"name" example:"mon-vpc-reseau"`
@@ -13,40 +13,40 @@ type VPC struct {
 	StaticRoutes []StaticRoute `json:"static_routes"`
 }
 
-// StaticRoute représente une route statique d'un VPC.
-// Les routes générées automatiquement par les NAT Gateways ne sont pas exposées.
+// StaticRoute represents a static route of a VPC.
+// Routes generated automatically by NAT Gateways are not exposed.
 type StaticRoute struct {
-	Policy     string `json:"policy" example:"policyDst"` // policyDst ou policySrc
+	Policy     string `json:"policy" example:"policyDst"` // policyDst or policySrc
 	CIDR       string `json:"cidr" example:"192.168.0.0/24"`
 	NextHopIP  string `json:"next_hop_ip" example:"10.0.0.254"`
-	RouteTable string `json:"route_table" example:"subnet-eid"` // EID du subnet
+	RouteTable string `json:"route_table" example:"subnet-eid"` // Subnet EID
 }
 
-// VPCRequest représente le corps de la requête pour créer ou mettre à jour un VPC.
+// VPCRequest represents the request body to create or update a VPC.
 type VPCRequest struct {
 	Name string `json:"name" example:"mon-vpc-reseau"`
-	// StaticRoutes (mise à jour uniquement) : nil = routes existantes conservées, [] = toutes supprimées
+	// StaticRoutes (update only): nil = existing routes kept, [] = all removed
 	StaticRoutes *[]StaticRoute `json:"static_routes,omitempty"`
 }
 
-// Validate vérifie que le nom du VPC ne dépasse pas 63 caractères.
+// Validate checks that the VPC name does not exceed 63 characters.
 func (v *VPCRequest) Validate() error {
 	if v.Name == "" {
-		return errors.New("le nom est requis")
+		return errors.New("name is required")
 	}
 	if len(v.Name) > 63 {
-		return fmt.Errorf("le nom ne doit pas dépasser 63 caractères (actuel: %d)", len(v.Name))
+		return fmt.Errorf("name must not exceed 63 characters (current: %d)", len(v.Name))
 	}
 	if v.StaticRoutes != nil {
 		for _, sr := range *v.StaticRoutes {
 			if sr.CIDR == "" {
-				return errors.New("le cidr est requis pour chaque route statique")
+				return errors.New("cidr is required for each static route")
 			}
 			if sr.RouteTable == "" {
-				return errors.New("la route_table (EID du subnet) est requise pour chaque route statique")
+				return errors.New("route_table (subnet EID) is required for each static route")
 			}
 			if sr.Policy != "" && sr.Policy != "policyDst" && sr.Policy != "policySrc" {
-				return fmt.Errorf("policy invalide: %s (valeurs possibles: policyDst, policySrc)", sr.Policy)
+				return fmt.Errorf("invalid policy: %s (possible values: policyDst, policySrc)", sr.Policy)
 			}
 		}
 	}

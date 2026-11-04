@@ -16,13 +16,13 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-// InstanceHandler gère les requêtes liées aux instances.
+// InstanceHandler handles requests related to instances.
 type InstanceHandler struct {
 	configStore     *store.ConfigStore
 	PollingInterval time.Duration
 }
 
-// NewInstanceHandler crée un nouveau InstanceHandler.
+// NewInstanceHandler creates a new InstanceHandler.
 func NewInstanceHandler(configStore *store.ConfigStore) *InstanceHandler {
 	return &InstanceHandler{
 		configStore:     configStore,
@@ -33,22 +33,22 @@ func NewInstanceHandler(configStore *store.ConfigStore) *InstanceHandler {
 func (h *InstanceHandler) getSPXClient(c echo.Context) (*spx.Client, error) {
 	endpoint := h.configStore.GetEndpoint()
 	if endpoint == "" {
-		return nil, echo.NewHTTPError(http.StatusInternalServerError, "Endpoint API non configuré au démarrage")
+		return nil, echo.NewHTTPError(http.StatusInternalServerError, "API endpoint not configured at startup")
 	}
 
 	authHeader := c.Request().Header.Get("Authorization")
 	if authHeader == "" {
-		return nil, echo.NewHTTPError(http.StatusUnauthorized, "Header Authorization manquant")
+		return nil, echo.NewHTTPError(http.StatusUnauthorized, "Missing Authorization header")
 	}
 
 	token := strings.TrimPrefix(authHeader, "api-token ")
 	if token == "" || token == authHeader {
-		return nil, echo.NewHTTPError(http.StatusUnauthorized, "Format du token invalide (attendu: api-token {token})")
+		return nil, echo.NewHTTPError(http.StatusUnauthorized, "Invalid token format (expected: api-token {token})")
 	}
 
 	client, err := spx.NewClient(endpoint, token)
 	if err != nil {
-		return nil, echo.NewHTTPError(http.StatusInternalServerError, "Erreur création client API")
+		return nil, echo.NewHTTPError(http.StatusInternalServerError, "Error creating API client")
 	}
 
 	return client, nil
@@ -128,7 +128,7 @@ func (h *InstanceHandler) mapInstanceFromSPX(r *spxmodels.InstanceFullResponse) 
 	spxDisks := make(map[string]string)
 	devicesDisks := r.VM.Spec.Template.Spec.Domain.Devices.Disks
 	for _, ad := range devicesDisks {
-		// Ignorer le disque cloud-init
+		// Skip the cloud-init disk
 		if ad.Name == "cloud-init" {
 			continue
 		}
@@ -137,7 +137,7 @@ func (h *InstanceHandler) mapInstanceFromSPX(r *spxmodels.InstanceFullResponse) 
 
 	if len(r.VM.Spec.Disks) > 0 {
 		for i, d := range r.VM.Spec.Disks {
-			// Ignorer le disque cloud-init
+			// Skip the cloud-init disk
 			if d.EID == "cloud-init" {
 				continue
 			}
@@ -154,8 +154,8 @@ func (h *InstanceHandler) mapInstanceFromSPX(r *spxmodels.InstanceFullResponse) 
 			})
 		}
 	} else {
-		// L'API SPX ne renvoie plus la liste spx des disques : on la reconstruit depuis le template KubeVirt
-		// (le nom du device est l'EID du disque, l'ordre est celui des devices)
+		// The SPX API no longer returns the spx disk list: it is rebuilt from the KubeVirt template
+		// (the device name is the disk EID, the order is that of the devices)
 		order := 0
 		for _, ad := range devicesDisks {
 			if ad.Name == "cloud-init" {
@@ -178,16 +178,16 @@ func (h *InstanceHandler) mapInstanceFromSPX(r *spxmodels.InstanceFullResponse) 
 	// Mapping Labels
 	inst.Labels = mapCustomLabelsFromSPX(r.VM.Metadata.Labels)
 
-	// Container disks montés
+	// Mounted container disks
 	inst.ContainerDisks = r.ContainerDisks
 	if inst.ContainerDisks == nil {
 		inst.ContainerDisks = []string{}
 	}
 
-	// Options avancées (surcharges présentes dans la spec de la VM)
+	// Advanced options (overrides present in the VM spec)
 	inst.Advanced = mapInstanceAdvancedFromSPX(r)
 
-	// Récupération de l'IP principale depuis VMI
+	// Get the primary IP from VMI
 	if len(r.VMI.Status.Interfaces) > 0 {
 		inst.IPAddress = r.VMI.Status.Interfaces[0].IPAddress
 		if inst.IPAddress == "" && len(r.VMI.Status.Interfaces[0].IPAddresses) > 0 {
@@ -198,7 +198,7 @@ func (h *InstanceHandler) mapInstanceFromSPX(r *spxmodels.InstanceFullResponse) 
 	return inst
 }
 
-// mapInstanceAdvancedToSPX convertit les options avancées du proxy vers le format SPX (nil = aucune surcharge)
+// mapInstanceAdvancedToSPX converts the proxy advanced options to the SPX format (nil = no override)
 func mapInstanceAdvancedToSPX(a *models.InstanceAdvanced) *spxmodels.InstanceAdvancedOptions {
 	if a == nil {
 		return nil
@@ -216,8 +216,8 @@ func mapInstanceAdvancedToSPX(a *models.InstanceAdvanced) *spxmodels.InstanceAdv
 	return adv
 }
 
-// mapInstanceAdvancedFromSPX reconstruit les options avancées à partir des surcharges de la spec VM.
-// Retourne nil si aucune surcharge TPM/EFI n'est présente (tout est hérité du vm_type).
+// mapInstanceAdvancedFromSPX rebuilds the advanced options from the VM spec overrides.
+// Returns nil if no TPM/EFI override is present (everything is inherited from the vm_type).
 func mapInstanceAdvancedFromSPX(r *spxmodels.InstanceFullResponse) *models.InstanceAdvanced {
 	domain := r.VM.Spec.Template.Spec.Domain
 	adv := &models.InstanceAdvanced{}
@@ -247,7 +247,7 @@ func mapInstanceAdvancedFromSPX(r *spxmodels.InstanceFullResponse) *models.Insta
 	return adv
 }
 
-// mapCustomLabelsFromSPX extrait les labels utilisateur ("clé:valeur", triés) d'une map de labels Kubernetes
+// mapCustomLabelsFromSPX extracts the user labels ("key:value", sorted) from a Kubernetes label map
 func mapCustomLabelsFromSPX(spxLabels map[string]string) []string {
 	var labels []string
 	for k, v := range spxLabels {
@@ -312,7 +312,7 @@ func (h *InstanceHandler) fetchInstanceFromSPXWithRetry(ctx context.Context, cli
 		case <-ctx.Done():
 			return nil, ctx.Err()
 		case <-timeout:
-			return nil, fmt.Errorf("timeout après 5 minutes d'attente de l'état ready pour l'instance %s", effectiveID)
+			return nil, fmt.Errorf("timeout after waiting 5 minutes for the ready state of instance %s", effectiveID)
 		case <-ticker.C:
 			inst, err := client.GetInstance(ctx, orgaID, az, projectID, effectiveID)
 			if err != nil {
@@ -331,7 +331,7 @@ func (h *InstanceHandler) fetchInstanceFromSPXWithRetry(ctx context.Context, cli
 	}
 }
 
-// ListInstances gère la récupération de toutes les instances.
+// ListInstances handles retrieving all instances.
 func (h *InstanceHandler) ListInstances(c echo.Context) error {
 	orgaID := c.Param("orga_id")
 	az := c.Param("az")
@@ -344,7 +344,7 @@ func (h *InstanceHandler) ListInstances(c echo.Context) error {
 
 	spxInstances, err := client.ListInstances(c.Request().Context(), orgaID, az, projectID)
 	if err != nil {
-		return echo.NewHTTPError(spxStatus(err, http.StatusInternalServerError), fmt.Sprintf("Erreur lors de la récupération des instances : %v", err))
+		return echo.NewHTTPError(spxStatus(err, http.StatusInternalServerError), fmt.Sprintf("Error fetching instances: %v", err))
 	}
 
 	instances := make([]*models.Instance, 0, len(spxInstances))
@@ -355,7 +355,7 @@ func (h *InstanceHandler) ListInstances(c echo.Context) error {
 	return c.JSON(http.StatusOK, instances)
 }
 
-// GetInstance gère la récupération d'une instance spécifique.
+// GetInstance handles retrieving a specific instance.
 func (h *InstanceHandler) GetInstance(c echo.Context) error {
 	orgaID := c.Param("orga_id")
 	az := c.Param("az")
@@ -370,15 +370,15 @@ func (h *InstanceHandler) GetInstance(c echo.Context) error {
 	spxInst, err := client.GetInstance(c.Request().Context(), orgaID, az, projectID, id)
 	if err != nil {
 		if spx.StatusCode(err) == http.StatusNotFound {
-			return echo.NewHTTPError(http.StatusNotFound, "Instance non trouvée")
+			return echo.NewHTTPError(http.StatusNotFound, "Instance not found")
 		}
-		return echo.NewHTTPError(spxStatus(err, http.StatusInternalServerError), fmt.Sprintf("Erreur lors de la récupération de l'instance : %v", err))
+		return echo.NewHTTPError(spxStatus(err, http.StatusInternalServerError), fmt.Sprintf("Error fetching the instance: %v", err))
 	}
 
 	return c.JSON(http.StatusOK, h.mapInstanceFromSPX(spxInst))
 }
 
-// CreateInstance gère la création d'une nouvelle instance.
+// CreateInstance handles the creation of a new instance.
 func (h *InstanceHandler) CreateInstance(c echo.Context) error {
 	orgaID := c.Param("orga_id")
 	az := c.Param("az")
@@ -386,7 +386,7 @@ func (h *InstanceHandler) CreateInstance(c echo.Context) error {
 
 	req := new(models.InstanceRequest)
 	if err := c.Bind(req); err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "Format de requête invalide")
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request format")
 	}
 
 	if err := req.Validate(); err != nil {
@@ -401,13 +401,13 @@ func (h *InstanceHandler) CreateInstance(c echo.Context) error {
 	body := h.mapInstanceRequestToSPX(req)
 	createResp, err := client.CreateInstance(c.Request().Context(), orgaID, az, projectID, body)
 	if err != nil {
-		return echo.NewHTTPError(spxStatus(err, http.StatusInternalServerError), fmt.Sprintf("Impossible de créer l'instance : %v", err))
+		return echo.NewHTTPError(spxStatus(err, http.StatusInternalServerError), fmt.Sprintf("Unable to create the instance: %v", err))
 	}
 
-	// Attente du statut Ready
+	// Wait for the Ready status
 	spxInst, err := h.fetchInstanceFromSPXWithRetry(c.Request().Context(), client, orgaID, az, projectID, createResp.EID, false)
 	if err != nil {
-		// On retourne quand même un objet avec l'ID si le polling échoue
+		// Still return an object with the ID if polling fails
 		return c.JSON(http.StatusCreated, &models.Instance{
 			ID:   createResp.EID,
 			Name: req.Name,
@@ -417,7 +417,7 @@ func (h *InstanceHandler) CreateInstance(c echo.Context) error {
 	return c.JSON(http.StatusCreated, h.mapInstanceFromSPX(spxInst))
 }
 
-// UpdateInstance gère la mise à jour d'une instance.
+// UpdateInstance handles updating an instance.
 func (h *InstanceHandler) UpdateInstance(c echo.Context) error {
 	orgaID := c.Param("orga_id")
 	az := c.Param("az")
@@ -426,7 +426,7 @@ func (h *InstanceHandler) UpdateInstance(c echo.Context) error {
 
 	req := new(models.InstanceRequest)
 	if err := c.Bind(req); err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "Format de requête invalide")
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request format")
 	}
 
 	if err := req.Validate(); err != nil {
@@ -438,9 +438,9 @@ func (h *InstanceHandler) UpdateInstance(c echo.Context) error {
 		return err
 	}
 
-	// On utilise CreateInstanceBody pour l'update car SPX semble utiliser le même format
+	// CreateInstanceBody is used for the update because SPX seems to use the same format
 	body := h.mapInstanceRequestToSPX(req)
-	// On doit convertir spxmodels.CreateInstanceBody en spxmodels.UpdateInstanceBody
+	// spxmodels.CreateInstanceBody must be converted to spxmodels.UpdateInstanceBody
 	updateBody := &spxmodels.UpdateInstanceBody{}
 	updateBody.General.ProductName = body.General.ProductName
 	updateBody.General.RunStrategy = body.General.RunStrategy
@@ -457,19 +457,19 @@ func (h *InstanceHandler) UpdateInstance(c echo.Context) error {
 
 	err = client.UpdateInstance(c.Request().Context(), orgaID, az, projectID, id, updateBody)
 	if err != nil {
-		return echo.NewHTTPError(spxStatus(err, http.StatusInternalServerError), fmt.Sprintf("Impossible de mettre à jour l'instance : %v", err))
+		return echo.NewHTTPError(spxStatus(err, http.StatusInternalServerError), fmt.Sprintf("Unable to update the instance: %v", err))
 	}
 
-	// Attente du statut Ready (en ignorant le premier état ready s'il s'agit d'une mise à jour asynchrone)
+	// Wait for the Ready status (ignoring the first ready state if this is an asynchronous update)
 	spxInst, err := h.fetchInstanceFromSPXWithRetry(c.Request().Context(), client, orgaID, az, projectID, id, true)
 	if err != nil {
-		return echo.NewHTTPError(spxStatus(err, http.StatusInternalServerError), fmt.Sprintf("Erreur après mise à jour (timeout ready) : %v", err))
+		return echo.NewHTTPError(spxStatus(err, http.StatusInternalServerError), fmt.Sprintf("Error after update (ready timeout): %v", err))
 	}
 
 	return c.JSON(http.StatusOK, h.mapInstanceFromSPX(spxInst))
 }
 
-// DeleteInstance gère la suppression d'une instance.
+// DeleteInstance handles the deletion of an instance.
 func (h *InstanceHandler) DeleteInstance(c echo.Context) error {
 	orgaID := c.Param("orga_id")
 	az := c.Param("az")
@@ -483,15 +483,15 @@ func (h *InstanceHandler) DeleteInstance(c echo.Context) error {
 
 	err = client.DeleteInstance(c.Request().Context(), orgaID, az, projectID, id)
 	if err != nil {
-		// Retry unique après 1s
+		// Single retry after 1s
 		time.Sleep(1 * time.Second)
 		err = client.DeleteInstance(c.Request().Context(), orgaID, az, projectID, id)
 		if err != nil {
-			return echo.NewHTTPError(spxStatus(err, http.StatusInternalServerError), fmt.Sprintf("Impossible de supprimer l'instance : %v", err))
+			return echo.NewHTTPError(spxStatus(err, http.StatusInternalServerError), fmt.Sprintf("Unable to delete the instance: %v", err))
 		}
 	}
 
-	// Attente de la suppression effective
+	// Wait for the actual deletion
 	timeout := time.After(5 * time.Minute)
 	ticker := time.NewTicker(h.PollingInterval)
 	defer ticker.Stop()
@@ -501,28 +501,28 @@ func (h *InstanceHandler) DeleteInstance(c echo.Context) error {
 		case <-c.Request().Context().Done():
 			return nil
 		case <-timeout:
-			return echo.NewHTTPError(http.StatusInternalServerError, "Timeout d'attente de suppression de l'instance")
+			return echo.NewHTTPError(http.StatusInternalServerError, "Timeout waiting for the instance deletion")
 		case <-ticker.C:
 			_, err := client.GetInstance(c.Request().Context(), orgaID, az, projectID, id)
 			if err != nil {
 				if spx.StatusCode(err) == http.StatusNotFound {
 					return c.NoContent(http.StatusNoContent)
 				}
-				return echo.NewHTTPError(spxStatus(err, http.StatusInternalServerError), fmt.Sprintf("Erreur pendant le polling de suppression : %v", err))
+				return echo.NewHTTPError(spxStatus(err, http.StatusInternalServerError), fmt.Sprintf("Error while polling for deletion: %v", err))
 			}
 		}
 	}
 }
 
-// ListVMTypes renvoie la liste de tous les types de VM disponibles pour un projet et une AZ donnés.
-// @Summary Liste les types de VM
-// @Description Renvoie la liste de tous les types de VM disponibles pour un projet et une AZ donnés.
+// ListVMTypes returns the list of all VM types available for a given project and AZ.
+// @Summary List VM types
+// @Description Returns the list of all VM types available for a given project and AZ.
 // @Tags instances
 // @Accept json
 // @Produce json
-// @Param orga_id path string true "ID de l'organisation"
-// @Param az path string true "Code de l'AZ"
-// @Param project_id path string true "ID du projet"
+// @Param orga_id path string true "Organization ID"
+// @Param az path string true "AZ code"
+// @Param project_id path string true "Project ID"
 // @Success 200 {array} string
 // @Failure 401 {object} map[string]string
 // @Failure 500 {object} map[string]string
@@ -539,7 +539,7 @@ func (h *InstanceHandler) ListVMTypes(c echo.Context) error {
 
 	vmTypes, err := client.ListVMTypes(c.Request().Context(), orgaID, az, projectID)
 	if err != nil {
-		return echo.NewHTTPError(spxStatus(err, http.StatusInternalServerError), fmt.Sprintf("Erreur récupération des types de VM : %v", err))
+		return echo.NewHTTPError(spxStatus(err, http.StatusInternalServerError), fmt.Sprintf("Error fetching VM types: %v", err))
 	}
 
 	return c.JSON(http.StatusOK, vmTypes)

@@ -8,7 +8,7 @@ import (
 	"github.com/Agora-Calyce/spx-tf-api/pkg/client/spx/models"
 )
 
-// ListSubnets récupère la liste des subnets pour un projet et une AZ donnés
+// ListSubnets retrieves the list of subnets for a given project and AZ
 func (c *Client) ListSubnets(ctx context.Context, orgaID, az, projectID string) ([]models.SubnetFullResponse, error) {
 	path := fmt.Sprintf("/%s/api/spx-ctrl/%s/%s/subnet", orgaID, az, projectID)
 	resp, err := c.do(ctx, http.MethodGet, path, nil, nil)
@@ -24,7 +24,7 @@ func (c *Client) ListSubnets(ctx context.Context, orgaID, az, projectID string) 
 	return subnets, nil
 }
 
-// CreateSubnet crée un nouveau subnet
+// CreateSubnet creates a new subnet
 func (c *Client) CreateSubnet(ctx context.Context, orgaID, az, projectID string, body *models.CreateSubnetBody) (*models.CreateResponse, error) {
 	path := fmt.Sprintf("/%s/api/spx-ctrl/%s/%s/subnet", orgaID, az, projectID)
 	resp, err := c.do(ctx, http.MethodPost, path, body, nil)
@@ -40,7 +40,7 @@ func (c *Client) CreateSubnet(ctx context.Context, orgaID, az, projectID string,
 	return &createResp, nil
 }
 
-// GetSubnet récupère un subnet par son ID effectif
+// GetSubnet retrieves a subnet by its ID
 func (c *Client) GetSubnet(ctx context.Context, orgaID, az, projectID, effectiveID string) (*models.SubnetFullResponse, error) {
 	path := fmt.Sprintf("/%s/api/spx-ctrl/%s/%s/subnet/%s", orgaID, az, projectID, effectiveID)
 	resp, err := c.do(ctx, http.MethodGet, path, nil, nil)
@@ -56,7 +56,7 @@ func (c *Client) GetSubnet(ctx context.Context, orgaID, az, projectID, effective
 	return &subnet, nil
 }
 
-// UpdateSubnet met à jour un subnet existant
+// UpdateSubnet updates an existing subnet
 func (c *Client) UpdateSubnet(ctx context.Context, orgaID, az, projectID, effectiveID string, body *models.UpdateSubnetBody) error {
 	path := fmt.Sprintf("/%s/api/spx-ctrl/%s/%s/subnet/%s", orgaID, az, projectID, effectiveID)
 	resp, err := c.do(ctx, http.MethodPost, path, body, nil)
@@ -67,7 +67,7 @@ func (c *Client) UpdateSubnet(ctx context.Context, orgaID, az, projectID, effect
 	return decodeResponse(resp, nil)
 }
 
-// DeleteSubnet supprime un subnet
+// DeleteSubnet deletes a subnet
 func (c *Client) DeleteSubnet(ctx context.Context, orgaID, az, projectID, effectiveID string) error {
 	path := fmt.Sprintf("/%s/api/spx-ctrl/%s/%s/subnet/%s", orgaID, az, projectID, effectiveID)
 	resp, err := c.do(ctx, http.MethodDelete, path, nil, nil)

@@ -20,7 +20,7 @@ client-test:
 ## run: Run the application
 run: build
 	@if [ -z "$(SPX_API_ENDPOINT)" ]; then \
-		echo "Erreur: SPX_API_ENDPOINT n'est pas défini. Utilisez: SPX_API_ENDPOINT=https://console.mon-superphenix.net/api make run"; \
+		echo "Error: SPX_API_ENDPOINT is not set. Use: SPX_API_ENDPOINT=https://console.mon-superphenix.net/api make run"; \
 		exit 1; \
 	fi
 	./$(BINARY_NAME)

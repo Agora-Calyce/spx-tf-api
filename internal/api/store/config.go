@@ -4,25 +4,25 @@ import (
 	"sync"
 )
 
-// ConfigStore gère la persistance en mémoire de la configuration globale.
+// ConfigStore handles the in-memory persistence of the global configuration.
 type ConfigStore struct {
 	mu       sync.RWMutex
 	endpoint string
 }
 
-// NewConfigStore crée un nouveau store pour la configuration.
+// NewConfigStore creates a new store for the configuration.
 func NewConfigStore() *ConfigStore {
 	return &ConfigStore{}
 }
 
-// SetEndpoint définit l'endpoint global (ne doit être appelé qu'au démarrage).
+// SetEndpoint sets the global endpoint (must only be called at startup).
 func (s *ConfigStore) SetEndpoint(endpoint string) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	s.endpoint = endpoint
 }
 
-// GetEndpoint retourne l'endpoint global.
+// GetEndpoint returns the global endpoint.
 func (s *ConfigStore) GetEndpoint() string {
 	s.mu.RLock()
 	defer s.mu.RUnlock()

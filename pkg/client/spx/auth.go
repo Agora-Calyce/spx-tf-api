@@ -7,7 +7,7 @@ import (
 	"github.com/Agora-Calyce/spx-tf-api/pkg/client/spx/models"
 )
 
-// WhoAmI récupère les informations de l'utilisateur authentifié
+// WhoAmI retrieves the authenticated user's information
 func (c *Client) WhoAmI(ctx context.Context) (*models.APIUser, error) {
 	resp, err := c.do(ctx, http.MethodGet, "/v1/whoami", nil, nil)
 	if err != nil {
@@ -22,7 +22,7 @@ func (c *Client) WhoAmI(ctx context.Context) (*models.APIUser, error) {
 	return &user, nil
 }
 
-// ListAPITokens liste les tokens d'API de l'utilisateur
+// ListAPITokens lists the user's API tokens
 func (c *Client) ListAPITokens(ctx context.Context) ([]models.APIToken, error) {
 	resp, err := c.do(ctx, http.MethodGet, "/api-token", nil, nil)
 	if err != nil {
@@ -37,7 +37,7 @@ func (c *Client) ListAPITokens(ctx context.Context) ([]models.APIToken, error) {
 	return tokens, nil
 }
 
-// CreateAPIToken crée un nouveau token d'API
+// CreateAPIToken creates a new API token
 func (c *Client) CreateAPIToken(ctx context.Context, body *models.CreateTokenBody) (*models.TokenResponse, error) {
 	resp, err := c.do(ctx, http.MethodPost, "/api-token", body, nil)
 	if err != nil {
@@ -52,7 +52,7 @@ func (c *Client) CreateAPIToken(ctx context.Context, body *models.CreateTokenBod
 	return &token, nil
 }
 
-// DeleteAPIToken supprime un token d'API
+// DeleteAPIToken deletes an API token
 func (c *Client) DeleteAPIToken(ctx context.Context, tokenID string) error {
 	resp, err := c.do(ctx, http.MethodDelete, "/api-token/"+tokenID, nil, nil)
 	if err != nil {

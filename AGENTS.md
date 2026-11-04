@@ -41,7 +41,7 @@ Server listens on `PORT` (default `8080`). Swagger UI: `/swagger/index.html`, he
   - a missing resource returns `404`;
   - an update must not wipe data Terraform omitted (e.g. VPC static routes).
 - Keep Swagger annotations (`// @Summary`, `// @Router`…) on handlers in sync with routes.
-- Code comments, log and error messages are in French; README is in English. Follow the existing style of the file you edit.
+- Code comments, log and error messages are in English; README is in English. Follow the existing style of the file you edit.
 
 ## Changing or adding a field / resource
 

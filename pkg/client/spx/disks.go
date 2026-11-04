@@ -8,7 +8,7 @@ import (
 	"github.com/Agora-Calyce/spx-tf-api/pkg/client/spx/models"
 )
 
-// ListDisks récupère la liste des disques pour un projet et une AZ donnés
+// ListDisks retrieves the list of disks for a given project and AZ
 func (c *Client) ListDisks(ctx context.Context, orgaID, az, projectID string) ([]models.DiskFullResponse, error) {
 	path := fmt.Sprintf("/%s/api/spx-ctrl/%s/%s/disk", orgaID, az, projectID)
 	resp, err := c.do(ctx, http.MethodGet, path, nil, nil)
@@ -24,7 +24,7 @@ func (c *Client) ListDisks(ctx context.Context, orgaID, az, projectID string) ([
 	return disks, nil
 }
 
-// CreateDisk crée un nouveau disque
+// CreateDisk creates a new disk
 func (c *Client) CreateDisk(ctx context.Context, orgaID, az, projectID string, body *models.CreateDiskBody) (*models.CreateResponse, error) {
 	path := fmt.Sprintf("/%s/api/spx-ctrl/%s/%s/disk", orgaID, az, projectID)
 	resp, err := c.do(ctx, http.MethodPost, path, body, nil)
@@ -40,7 +40,7 @@ func (c *Client) CreateDisk(ctx context.Context, orgaID, az, projectID string, b
 	return &createResp, nil
 }
 
-// GetDisk récupère un disque par son ID effectif
+// GetDisk retrieves a disk by its ID
 func (c *Client) GetDisk(ctx context.Context, orgaID, az, projectID, effectiveID string) (*models.DiskFullResponse, error) {
 	path := fmt.Sprintf("/%s/api/spx-ctrl/%s/%s/disk/%s", orgaID, az, projectID, effectiveID)
 	resp, err := c.do(ctx, http.MethodGet, path, nil, nil)
@@ -56,7 +56,7 @@ func (c *Client) GetDisk(ctx context.Context, orgaID, az, projectID, effectiveID
 	return &disk, nil
 }
 
-// UpdateDisk met à jour un disque existant
+// UpdateDisk updates an existing disk
 func (c *Client) UpdateDisk(ctx context.Context, orgaID, az, projectID, effectiveID string, body *models.UpdateDiskBody) error {
 	path := fmt.Sprintf("/%s/api/spx-ctrl/%s/%s/disk/%s", orgaID, az, projectID, effectiveID)
 	resp, err := c.do(ctx, http.MethodPost, path, body, nil)
@@ -67,7 +67,7 @@ func (c *Client) UpdateDisk(ctx context.Context, orgaID, az, projectID, effectiv
 	return decodeResponse(resp, nil)
 }
 
-// DeleteDisk supprime un disque
+// DeleteDisk deletes a disk
 func (c *Client) DeleteDisk(ctx context.Context, orgaID, az, projectID, effectiveID string) error {
 	path := fmt.Sprintf("/%s/api/spx-ctrl/%s/%s/disk/%s", orgaID, az, projectID, effectiveID)
 	resp, err := c.do(ctx, http.MethodDelete, path, nil, nil)
@@ -78,7 +78,7 @@ func (c *Client) DeleteDisk(ctx context.Context, orgaID, az, projectID, effectiv
 	return decodeResponse(resp, nil)
 }
 
-// ListStorageClasses récupère la liste des StorageClasses pour un projet et une AZ donnés
+// ListStorageClasses retrieves the list of StorageClasses for a given project and AZ
 func (c *Client) ListStorageClasses(ctx context.Context, orgaID, az, projectID string) ([]string, error) {
 	path := fmt.Sprintf("/%s/api/spx-ctrl/%s/%s/storage-class", orgaID, az, projectID)
 	resp, err := c.do(ctx, http.MethodGet, path, nil, nil)

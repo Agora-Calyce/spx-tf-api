@@ -7,10 +7,10 @@ import (
 	"strings"
 )
 
-// MaxSecurityGroupSubnets est le nombre maximal de subnets ciblés par un groupe de sécurité
+// MaxSecurityGroupSubnets is the maximum number of subnets targeted by a security group
 const MaxSecurityGroupSubnets = 10
 
-// SecurityGroup représente un groupe de sécurité dans l'API interne du proxy
+// SecurityGroup represents a security group in the proxy's internal API
 type SecurityGroup struct {
 	ID          string        `json:"id"`
 	Name        string        `json:"name"`
@@ -21,32 +21,32 @@ type SecurityGroup struct {
 	SubnetIDs   []string      `json:"subnetIds"`
 }
 
-// SecurityGroupRequest représente une requête de création ou mise à jour de groupe de sécurité
+// SecurityGroupRequest represents a security group create or update request
 type SecurityGroupRequest struct {
 	Name        string        `json:"name" validate:"required"`
 	Description string        `json:"description"`
 	Target      LabelSelector `json:"target"`
 	Ingress     []IngressRule `json:"ingress"`
 	Egress      []EgressRule  `json:"egress"`
-	// SubnetIDs limite le groupe de sécurité à ces subnets (vide = tous les subnets)
+	// SubnetIDs limits the security group to these subnets (empty = all subnets)
 	SubnetIDs []string `json:"subnetIds"`
 }
 
-// LabelSelector représente un sélecteur de labels.
-// MatchLabels est une liste de "clé:valeur".
+// LabelSelector represents a label selector.
+// MatchLabels is a list of "key:value".
 type LabelSelector struct {
 	MatchLabels      []string          `json:"matchLabels"`
 	MatchExpressions []MatchExpression `json:"matchExpressions"`
 }
 
-// MatchExpression représente une expression de correspondance
+// MatchExpression represents a match expression
 type MatchExpression struct {
 	Key      string   `json:"key"`
 	Operator string   `json:"operator"`
 	Values   []string `json:"values"`
 }
 
-// IngressRule représente une règle entrante
+// IngressRule represents an ingress rule
 type IngressRule struct {
 	Ports    []SgPort `json:"ports"`
 	From     []Peer   `json:"from"`
@@ -54,7 +54,7 @@ type IngressRule struct {
 	DenyAll  bool     `json:"denyAll"`
 }
 
-// EgressRule représente une règle sortante
+// EgressRule represents an egress rule
 type EgressRule struct {
 	Ports    []SgPort `json:"ports"`
 	To       []Peer   `json:"to"`
@@ -62,30 +62,30 @@ type EgressRule struct {
 	DenyAll  bool     `json:"denyAll"`
 }
 
-// SgPort représente un port ou une plage de ports
+// SgPort represents a port or a port range
 type SgPort struct {
 	Port     PortNumber `json:"port"`
 	EndPort  PortNumber `json:"endPort"`
 	Protocol string     `json:"protocol"`
 }
 
-// Peer représente un pair (pod selector ou IP block)
+// Peer represents a peer (pod selector or IP block)
 type Peer struct {
 	PodSelector *LabelSelector `json:"podSelector,omitempty"`
 	IPBlock     *IPBlock       `json:"IPBlock,omitempty"`
 }
 
-// IPBlock représente un bloc d'adresses IP
+// IPBlock represents an IP address block
 type IPBlock struct {
 	CIDR   string   `json:"CIDR"`
 	Except []string `json:"Except"`
 }
 
-// PortNumber est un numéro de port accepté en entrée sous forme de nombre ou de chaîne
-// (compatibilité avec les clients qui envoient "80"), et toujours sérialisé en nombre.
+// PortNumber is a port number accepted as input as a number or a string
+// (compatibility with clients that send "80"), and always serialized as a number.
 type PortNumber int32
 
-// UnmarshalJSON accepte un nombre, une chaîne numérique ou une chaîne vide (0)
+// UnmarshalJSON accepts a number, a numeric string or an empty string (0)
 func (p *PortNumber) UnmarshalJSON(data []byte) error {
 	if len(data) > 0 && data[0] == '"' {
 		var s string
@@ -98,7 +98,7 @@ func (p *PortNumber) UnmarshalJSON(data []byte) error {
 		}
 		n, err := strconv.ParseInt(s, 10, 32)
 		if err != nil {
-			return fmt.Errorf("port invalide: %q", s)
+			return fmt.Errorf("invalid port: %q", s)
 		}
 		*p = PortNumber(n)
 		return nil
@@ -111,81 +111,81 @@ func (p *PortNumber) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-// SplitMatchLabel découpe un label "clé:valeur"
+// SplitMatchLabel splits a "key:value" label
 func SplitMatchLabel(label string) (string, string, error) {
 	key, value, ok := strings.Cut(label, ":")
 	if !ok || key == "" {
-		return "", "", fmt.Errorf("label invalide %q (format attendu: clé:valeur)", label)
+		return "", "", fmt.Errorf("invalid label %q (expected format: key:value)", label)
 	}
 	return key, value, nil
 }
 
-// Validate valide la requête de groupe de sécurité
+// Validate validates the security group request
 func (r *SecurityGroupRequest) Validate() error {
 	if r.Name == "" {
-		return fmt.Errorf("le nom est requis")
+		return fmt.Errorf("name is required")
 	}
 	if len(r.Name) > 63 {
-		return fmt.Errorf("le nom ne doit pas dépasser 63 caractères (actuel: %d)", len(r.Name))
+		return fmt.Errorf("name must not exceed 63 characters (current: %d)", len(r.Name))
 	}
 
 	if len(r.SubnetIDs) > MaxSecurityGroupSubnets {
-		return fmt.Errorf("subnet_ids ne doit pas contenir plus de %d subnets (actuel: %d)", MaxSecurityGroupSubnets, len(r.SubnetIDs))
+		return fmt.Errorf("subnet_ids must not contain more than %d subnets (current: %d)", MaxSecurityGroupSubnets, len(r.SubnetIDs))
 	}
 
 	hasLabels := len(r.Target.MatchLabels) > 0
 	hasExpressions := len(r.Target.MatchExpressions) > 0
 
 	if !hasLabels && !hasExpressions {
-		return fmt.Errorf("la cible (target) doit contenir soit match_labels, soit match_expressions")
+		return fmt.Errorf("target must contain either match_labels or match_expressions")
 	}
 
 	if hasLabels && hasExpressions {
-		return fmt.Errorf("la cible (target) ne peut pas contenir à la fois match_labels et match_expressions")
+		return fmt.Errorf("target cannot contain both match_labels and match_expressions")
 	}
 
 	if err := validateLabelSelector(r.Target); err != nil {
-		return fmt.Errorf("erreur dans la cible (target): %w", err)
+		return fmt.Errorf("error in target: %w", err)
 	}
 
-	// Validation des ports pour ingress
+	// Validate the ingress ports
 	if len(r.Ingress) > 1 {
 		for _, ingress := range r.Ingress {
 			if ingress.AllowAll {
-				return fmt.Errorf("une règle ingress.allow_all=true ne peut pas coexister avec d'autres règles ingress")
+				return fmt.Errorf("an ingress.allow_all=true rule cannot coexist with other ingress rules")
 			}
 		}
 	}
 	for _, ingress := range r.Ingress {
 		for i := range ingress.Ports {
 			if err := validatePort(&ingress.Ports[i]); err != nil {
-				return fmt.Errorf("erreur dans la règle ingress: %w", err)
+				return fmt.Errorf("error in ingress rule: %w", err)
 			}
 		}
 		for _, from := range ingress.From {
 			if err := validatePeer(from); err != nil {
-				return fmt.Errorf("erreur dans la règle ingress (from): %w", err)
+				return fmt.Errorf("error in ingress rule (from): %w", err)
 			}
 		}
 	}
 
-	// Validation des ports pour egress
+	// Validate the egress ports
 	if len(r.Egress) > 1 {
 		for _, egress := range r.Egress {
 			if egress.AllowAll {
-				return fmt.Errorf("une règle egress.allow_all=true ne peut pas coexister avec d'autres règles egress")
+				return fmt.Errorf("an egress.allow_all=true rule cannot coexist with other egress rules")
 			}
 		}
 	}
 	for _, egress := range r.Egress {
 		for i := range egress.Ports {
 			if err := validatePort(&egress.Ports[i]); err != nil {
-				return fmt.Errorf("erreur dans la règle egress: %w", err)
+				return fmt.Errorf("error in egress rule: %w", err)
 			}
 		}
 		for _, to := range egress.To {
 			if err := validatePeer(to); err != nil {
-				return fmt.Errorf("erreur dans la règle egress (to): %w", err)
+				return fmt.Errorf("error in egress rule (to): %w", err)
 			}
 		}
 	}
@@ -207,7 +207,7 @@ func validateLabelSelector(ls LabelSelector) error {
 	}
 	for _, exp := range ls.MatchExpressions {
 		if !validOps[exp.Operator] {
-			return fmt.Errorf("opérateur d'expression invalide: %s (doit être parmis In, NotIn, Exists, DoesNotExists)", exp.Operator)
+			return fmt.Errorf("invalid expression operator: %s (must be one of In, NotIn, Exists, DoesNotExists)", exp.Operator)
 		}
 	}
 	return nil
@@ -218,7 +218,7 @@ func validatePeer(p Peer) error {
 	hasIPBlock := p.IPBlock != nil && p.IPBlock.CIDR != ""
 
 	if !hasPodSelector && !hasIPBlock {
-		return fmt.Errorf("le pair doit contenir soit un sélecteur de pods (pod_selector), soit un bloc IP (ip_block.cidr)")
+		return fmt.Errorf("peer must contain either a pod selector (pod_selector) or an IP block (ip_block.cidr)")
 	}
 
 	if hasPodSelector {
@@ -232,19 +232,19 @@ func validatePeer(p Peer) error {
 
 func validatePort(p *SgPort) error {
 	if p.Port < 1 || p.Port > 65535 {
-		return fmt.Errorf("le port doit être compris entre 1 et 65535 (valeur: %d)", p.Port)
+		return fmt.Errorf("port must be between 1 and 65535 (value: %d)", p.Port)
 	}
-	// Si end_port n'est pas défini, on prend la valeur de port
+	// If end_port is not set, use the port value
 	if p.EndPort == 0 {
 		p.EndPort = p.Port
 	}
 	if p.EndPort < 1 || p.EndPort > 65535 {
-		return fmt.Errorf("le port final (end_port) doit être compris entre 1 et 65535 (valeur: %d)", p.EndPort)
+		return fmt.Errorf("end_port must be between 1 and 65535 (value: %d)", p.EndPort)
 	}
 	if p.EndPort < p.Port {
-		return fmt.Errorf("le port final (end_port: %d) doit être supérieur ou égal au port (port: %d)", p.EndPort, p.Port)
+		return fmt.Errorf("end_port (%d) must be greater than or equal to port (%d)", p.EndPort, p.Port)
 	}
-	// Protocole par défaut : TCP
+	// Default protocol: TCP
 	if p.Protocol == "" {
 		p.Protocol = "TCP"
 	}
@@ -252,7 +252,7 @@ func validatePort(p *SgPort) error {
 	switch p.Protocol {
 	case "TCP", "UDP", "SCTP":
 	default:
-		return fmt.Errorf("protocole invalide: %s (valeurs possibles: TCP, UDP, SCTP)", p.Protocol)
+		return fmt.Errorf("invalid protocol: %s (possible values: TCP, UDP, SCTP)", p.Protocol)
 	}
 	return nil
 }

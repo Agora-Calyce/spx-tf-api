@@ -12,14 +12,14 @@ func TestConfiguration_Validate(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "Configuration valide",
+			name: "Valid configuration",
 			config: models.Configuration{
 				Endpoint: "https://api.example.com",
 			},
 			wantErr: false,
 		},
 		{
-			name:    "Endpoint manquant",
+			name:    "Missing endpoint",
 			config:  models.Configuration{},
 			wantErr: true,
 		},

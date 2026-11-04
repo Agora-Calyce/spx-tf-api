@@ -2,7 +2,7 @@ package models
 
 import "fmt"
 
-// SSHKey représente une clé SSH pour le fournisseur Terraform
+// SSHKey represents an SSH key for the Terraform provider
 type SSHKey struct {
 	ID          string `json:"id"`
 	Name        string `json:"name"`
@@ -10,13 +10,13 @@ type SSHKey struct {
 	Fingerprint string `json:"fingerprint"`
 }
 
-// SSHKeyRequest est la requête pour créer une clé SSH
+// SSHKeyRequest is the request to create an SSH key
 type SSHKeyRequest struct {
 	Name      string `json:"name"`
 	PublicKey string `json:"publicKey"`
 }
 
-// Validate valide la requête de création de clé SSH
+// Validate validates the SSH key creation request
 func (r *SSHKeyRequest) Validate() error {
 	if r.Name == "" {
 		return fmt.Errorf("name is required")

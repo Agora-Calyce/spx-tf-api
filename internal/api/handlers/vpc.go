@@ -13,14 +13,14 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-// VPCHandler gère les requêtes liées aux VPC.
+// VPCHandler handles requests related to VPCs.
 type VPCHandler struct {
 	vpcs        map[string]*models.VPC
 	configStore *store.ConfigStore
 	mu          sync.RWMutex
 }
 
-// NewVPCHandler crée un nouveau VPCHandler.
+// NewVPCHandler creates a new VPCHandler.
 func NewVPCHandler(configStore *store.ConfigStore) *VPCHandler {
 	return &VPCHandler{
 		vpcs:        make(map[string]*models.VPC),
@@ -28,40 +28,40 @@ func NewVPCHandler(configStore *store.ConfigStore) *VPCHandler {
 	}
 }
 
-// getSPXClient helper pour obtenir un client configuré à partir du header Authorization
+// getSPXClient is a helper to get a client configured from the Authorization header
 func (h *VPCHandler) getSPXClient(c echo.Context) (*spx.Client, error) {
 	endpoint := h.configStore.GetEndpoint()
 	if endpoint == "" {
-		return nil, echo.NewHTTPError(http.StatusInternalServerError, "Endpoint API non configuré au démarrage")
+		return nil, echo.NewHTTPError(http.StatusInternalServerError, "API endpoint not configured at startup")
 	}
 
 	authHeader := c.Request().Header.Get("Authorization")
 	if authHeader == "" {
-		return nil, echo.NewHTTPError(http.StatusUnauthorized, "Header Authorization manquant")
+		return nil, echo.NewHTTPError(http.StatusUnauthorized, "Missing Authorization header")
 	}
 
 	token := strings.TrimPrefix(authHeader, "api-token ")
-	if token == "" || token == authHeader { // Si "api-token " n'était pas présent ou rien après
-		return nil, echo.NewHTTPError(http.StatusUnauthorized, "Format du token invalide (attendu: api-token {token})")
+	if token == "" || token == authHeader { // If "api-token " was missing or nothing follows it
+		return nil, echo.NewHTTPError(http.StatusUnauthorized, "Invalid token format (expected: api-token {token})")
 	}
 
 	client, err := spx.NewClient(endpoint, token)
 	if err != nil {
-		return nil, echo.NewHTTPError(http.StatusInternalServerError, "Erreur création client API")
+		return nil, echo.NewHTTPError(http.StatusInternalServerError, "Error creating API client")
 	}
 
 	return client, nil
 }
 
-// CreateVPC crée un nouveau VPC.
-// @Summary Créer un VPC
-// @Description Crée une nouvelle ressource VPC en appelant l'API SPX. OrgaID, ProjectID et AZ doivent être fournis dans l'URL.
+// CreateVPC creates a new VPC.
+// @Summary Create a VPC
+// @Description Creates a new VPC resource by calling the SPX API. OrgaID, ProjectID and AZ must be provided in the URL.
 // @Tags vpc
 // @Accept json
 // @Produce json
-// @Param orga_id path string true "ID de l'organisation"
-// @Param az path string true "Zone de disponibilité"
-// @Param project_id path string true "ID du projet"
+// @Param orga_id path string true "Organization ID"
+// @Param az path string true "Availability zone"
+// @Param project_id path string true "Project ID"
 // @Param vpc body models.VPCRequest true "VPC Request Body"
 // @Param Authorization header string true "api-token {token}"
 // @Success 201 {object} models.VPC
@@ -75,12 +75,12 @@ func (h *VPCHandler) CreateVPC(c echo.Context) error {
 	projectID := c.Param("project_id")
 
 	if orgaID == "" || az == "" || projectID == "" {
-		return c.JSON(http.StatusBadRequest, map[string]string{"error": "orga_id, az et project_id sont requis dans l'URL"})
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": "orga_id, az and project_id are required in the URL"})
 	}
 
 	var req models.VPCRequest
 	if err := c.Bind(&req); err != nil {
-		return c.JSON(http.StatusBadRequest, map[string]string{"error": "corps de requête invalide"})
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": "invalid request body"})
 	}
 
 	if err := req.Validate(); err != nil {
@@ -97,7 +97,7 @@ func (h *VPCHandler) CreateVPC(c echo.Context) error {
 
 	resp, err := client.CreateVPC(c.Request().Context(), orgaID, az, projectID, spxReq)
 	if err != nil {
-		return c.JSON(spxStatus(err, http.StatusInternalServerError), map[string]string{"error": fmt.Sprintf("Erreur API SPX: %v", err)})
+		return c.JSON(spxStatus(err, http.StatusInternalServerError), map[string]string{"error": fmt.Sprintf("SPX API error: %v", err)})
 	}
 
 	vpc := &models.VPC{
@@ -114,14 +114,14 @@ func (h *VPCHandler) CreateVPC(c echo.Context) error {
 	return c.JSON(http.StatusCreated, vpc)
 }
 
-// GetVPC récupère un VPC par son ID.
-// @Summary Récupérer un VPC
-// @Description Récupère les détails d'un VPC en appelant l'API SPX. OrgaID, ProjectID et AZ doivent être fournis dans l'URL.
+// GetVPC retrieves a VPC by its ID.
+// @Summary Get a VPC
+// @Description Retrieves the details of a VPC by calling the SPX API. OrgaID, ProjectID and AZ must be provided in the URL.
 // @Tags vpc
 // @Produce json
-// @Param orga_id path string true "ID de l'organisation"
-// @Param az path string true "Zone de disponibilité"
-// @Param project_id path string true "ID du projet"
+// @Param orga_id path string true "Organization ID"
+// @Param az path string true "Availability zone"
+// @Param project_id path string true "Project ID"
 // @Param id path string true "VPC ID (Effective ID)"
 // @Param Authorization header string true "api-token {token}"
 // @Success 200 {object} models.VPC
@@ -137,7 +137,7 @@ func (h *VPCHandler) GetVPC(c echo.Context) error {
 	id := c.Param("id")
 
 	if orgaID == "" || az == "" || projectID == "" {
-		return c.JSON(http.StatusBadRequest, map[string]string{"error": "orga_id, az et project_id sont requis dans l'URL"})
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": "orga_id, az and project_id are required in the URL"})
 	}
 
 	client, err := h.getSPXClient(c)
@@ -147,7 +147,7 @@ func (h *VPCHandler) GetVPC(c echo.Context) error {
 
 	resp, err := client.GetVPC(c.Request().Context(), orgaID, az, projectID, id)
 	if err != nil {
-		return c.JSON(spxStatus(err, http.StatusNotFound), map[string]string{"error": "VPC non trouvé sur SPX"})
+		return c.JSON(spxStatus(err, http.StatusNotFound), map[string]string{"error": "VPC not found on SPX"})
 	}
 
 	vpc := mapVPCFromSPX(resp, az)
@@ -155,15 +155,15 @@ func (h *VPCHandler) GetVPC(c echo.Context) error {
 	return c.JSON(http.StatusOK, vpc)
 }
 
-// UpdateVPC met à jour un VPC existant.
-// @Summary Mettre à jour un VPC
-// @Description Met à jour le nom d'un VPC en appelant l'API SPX. OrgaID, ProjectID et AZ doivent être fournis dans l'URL.
+// UpdateVPC updates an existing VPC.
+// @Summary Update a VPC
+// @Description Updates the name of a VPC by calling the SPX API. OrgaID, ProjectID and AZ must be provided in the URL.
 // @Tags vpc
 // @Accept json
 // @Produce json
-// @Param orga_id path string true "ID de l'organisation"
-// @Param az path string true "Zone de disponibilité"
-// @Param project_id path string true "ID du projet"
+// @Param orga_id path string true "Organization ID"
+// @Param az path string true "Availability zone"
+// @Param project_id path string true "Project ID"
 // @Param id path string true "VPC ID (Effective ID)"
 // @Param vpc body models.VPCRequest true "VPC Request Body"
 // @Param Authorization header string true "api-token {token}"
@@ -180,12 +180,12 @@ func (h *VPCHandler) UpdateVPC(c echo.Context) error {
 	id := c.Param("id")
 
 	if orgaID == "" || az == "" || projectID == "" {
-		return c.JSON(http.StatusBadRequest, map[string]string{"error": "orga_id, az et project_id sont requis dans l'URL"})
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": "orga_id, az and project_id are required in the URL"})
 	}
 
 	var req models.VPCRequest
 	if err := c.Bind(&req); err != nil {
-		return c.JSON(http.StatusBadRequest, map[string]string{"error": "corps de requête invalide"})
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": "invalid request body"})
 	}
 
 	if err := req.Validate(); err != nil {
@@ -202,25 +202,25 @@ func (h *VPCHandler) UpdateVPC(c echo.Context) error {
 	if req.StaticRoutes != nil {
 		spxReq.StaticRoutes = mapStaticRoutesToSPX(*req.StaticRoutes)
 	} else {
-		// L'API SPX remplace toutes les routes statiques à chaque mise à jour :
-		// sans static_routes dans la requête, on renvoie les routes actuelles pour ne pas les perdre.
+		// The SPX API replaces all static routes on every update:
+		// without static_routes in the request, the current routes are sent back so they are not lost.
 		current, err := client.GetVPC(c.Request().Context(), orgaID, az, projectID, id)
 		if err != nil {
-			return c.JSON(spxStatus(err, http.StatusNotFound), map[string]string{"error": fmt.Sprintf("VPC non trouvé sur SPX: %v", err)})
+			return c.JSON(spxStatus(err, http.StatusNotFound), map[string]string{"error": fmt.Sprintf("VPC not found on SPX: %v", err)})
 		}
 		spxReq.StaticRoutes = mapStaticRoutesToSPX(mapVPCFromSPX(current, az).StaticRoutes)
 	}
 
 	err = client.UpdateVPC(c.Request().Context(), orgaID, az, projectID, id, spxReq)
 	if err != nil {
-		return c.JSON(spxStatus(err, http.StatusInternalServerError), map[string]string{"error": fmt.Sprintf("Erreur API SPX: %v", err)})
+		return c.JSON(spxStatus(err, http.StatusInternalServerError), map[string]string{"error": fmt.Sprintf("SPX API error: %v", err)})
 	}
 
-	// Après une mise à jour réussie, on récupère l'objet complet pour le retourner
+	// After a successful update, fetch the full object to return it
 	respGet, err := client.GetVPC(c.Request().Context(), orgaID, az, projectID, id)
 	if err != nil {
-		// Si le GET échoue juste après, on retourne quand même un objet minimal ou une erreur
-		return c.JSON(spxStatus(err, http.StatusInternalServerError), map[string]string{"error": fmt.Sprintf("VPC mis à jour mais erreur lors de la récupération: %v", err)})
+		// If the GET fails right after, still return a minimal object or an error
+		return c.JSON(spxStatus(err, http.StatusInternalServerError), map[string]string{"error": fmt.Sprintf("VPC updated but error while fetching it: %v", err)})
 	}
 
 	vpc := mapVPCFromSPX(respGet, az)
@@ -228,13 +228,13 @@ func (h *VPCHandler) UpdateVPC(c echo.Context) error {
 	return c.JSON(http.StatusOK, vpc)
 }
 
-// DeleteVPC supprime un VPC.
-// @Summary Supprimer un VPC
-// @Description Supprime un VPC en appelant l'API SPX. OrgaID, ProjectID et AZ doivent être fournis dans l'URL.
+// DeleteVPC deletes a VPC.
+// @Summary Delete a VPC
+// @Description Deletes a VPC by calling the SPX API. OrgaID, ProjectID and AZ must be provided in the URL.
 // @Tags vpc
-// @Param orga_id path string true "ID de l'organisation"
-// @Param az path string true "Zone de disponibilité"
-// @Param project_id path string true "ID du projet"
+// @Param orga_id path string true "Organization ID"
+// @Param az path string true "Availability zone"
+// @Param project_id path string true "Project ID"
 // @Param id path string true "VPC ID (Effective ID)"
 // @Param Authorization header string true "api-token {token}"
 // @Success 204 "No Content"
@@ -250,7 +250,7 @@ func (h *VPCHandler) DeleteVPC(c echo.Context) error {
 	id := c.Param("id")
 
 	if orgaID == "" || az == "" || projectID == "" {
-		return c.JSON(http.StatusBadRequest, map[string]string{"error": "orga_id, az et project_id sont requis dans l'URL"})
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": "orga_id, az and project_id are required in the URL"})
 	}
 
 	client, err := h.getSPXClient(c)
@@ -260,7 +260,7 @@ func (h *VPCHandler) DeleteVPC(c echo.Context) error {
 
 	err = client.DeleteVPC(c.Request().Context(), orgaID, az, projectID, id)
 	if err != nil {
-		return c.JSON(spxStatus(err, http.StatusInternalServerError), map[string]string{"error": fmt.Sprintf("Erreur API SPX lors de la suppression: %v", err)})
+		return c.JSON(spxStatus(err, http.StatusInternalServerError), map[string]string{"error": fmt.Sprintf("SPX API error during deletion: %v", err)})
 	}
 
 	h.mu.Lock()
@@ -270,14 +270,14 @@ func (h *VPCHandler) DeleteVPC(c echo.Context) error {
 	return c.NoContent(http.StatusNoContent)
 }
 
-// ListVPCs liste tous les VPCs.
-// @Summary Lister les VPCs
-// @Description Renvoie la liste de tous les VPCs en appelant l'API SPX. OrgaID, ProjectID et AZ doivent être fournis dans l'URL.
+// ListVPCs lists all VPCs.
+// @Summary List VPCs
+// @Description Returns the list of all VPCs by calling the SPX API. OrgaID, ProjectID and AZ must be provided in the URL.
 // @Tags vpc
 // @Produce json
-// @Param orga_id path string true "ID de l'organisation"
-// @Param az path string true "Zone de disponibilité"
-// @Param project_id path string true "ID du projet"
+// @Param orga_id path string true "Organization ID"
+// @Param az path string true "Availability zone"
+// @Param project_id path string true "Project ID"
 // @Param Authorization header string true "api-token {token}"
 // @Success 200 {array} models.VPC
 // @Failure 400 {object} map[string]string
@@ -290,7 +290,7 @@ func (h *VPCHandler) ListVPCs(c echo.Context) error {
 	projectID := c.Param("project_id")
 
 	if orgaID == "" || az == "" || projectID == "" {
-		return c.JSON(http.StatusBadRequest, map[string]string{"error": "orga_id, az et project_id sont requis dans l'URL"})
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": "orga_id, az and project_id are required in the URL"})
 	}
 
 	client, err := h.getSPXClient(c)
@@ -300,7 +300,7 @@ func (h *VPCHandler) ListVPCs(c echo.Context) error {
 
 	resp, err := client.ListVPCs(c.Request().Context(), orgaID, az, projectID)
 	if err != nil {
-		return c.JSON(spxStatus(err, http.StatusInternalServerError), map[string]string{"error": fmt.Sprintf("Erreur API SPX: %v", err)})
+		return c.JSON(spxStatus(err, http.StatusInternalServerError), map[string]string{"error": fmt.Sprintf("SPX API error: %v", err)})
 	}
 
 	list := make([]*models.VPC, 0, len(resp))
@@ -311,7 +311,7 @@ func (h *VPCHandler) ListVPCs(c echo.Context) error {
 	return c.JSON(http.StatusOK, list)
 }
 
-// mapVPCFromSPX convertit une réponse SPX en VPC (sans les routes générées par les NAT Gateways)
+// mapVPCFromSPX converts an SPX response into a VPC (without the routes generated by NAT Gateways)
 func mapVPCFromSPX(resp *spxmodels.VPCFullResponse, az string) *models.VPC {
 	vpc := &models.VPC{
 		ID:           resp.EID,

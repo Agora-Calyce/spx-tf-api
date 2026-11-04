@@ -8,7 +8,7 @@ import (
 	"github.com/Agora-Calyce/spx-tf-api/pkg/client/spx/models"
 )
 
-// ListVPCs récupère la liste des VPCs pour un projet et une AZ donnés
+// ListVPCs retrieves the list of VPCs for a given project and AZ
 func (c *Client) ListVPCs(ctx context.Context, orgaID, az, projectID string) ([]models.VPCFullResponse, error) {
 	path := fmt.Sprintf("/%s/api/spx-ctrl/%s/%s/vpc", orgaID, az, projectID)
 	resp, err := c.do(ctx, http.MethodGet, path, nil, nil)
@@ -24,7 +24,7 @@ func (c *Client) ListVPCs(ctx context.Context, orgaID, az, projectID string) ([]
 	return vpcs, nil
 }
 
-// CreateVPC crée un nouveau VPC
+// CreateVPC creates a new VPC
 func (c *Client) CreateVPC(ctx context.Context, orgaID, az, projectID string, body *models.CreateVPCBody) (*models.CreateResponse, error) {
 	path := fmt.Sprintf("/%s/api/spx-ctrl/%s/%s/vpc", orgaID, az, projectID)
 	resp, err := c.do(ctx, http.MethodPost, path, body, nil)
@@ -40,7 +40,7 @@ func (c *Client) CreateVPC(ctx context.Context, orgaID, az, projectID string, bo
 	return &createResp, nil
 }
 
-// GetVPC récupère un VPC par son ID effectif
+// GetVPC retrieves a VPC by its ID
 func (c *Client) GetVPC(ctx context.Context, orgaID, az, projectID, effectiveID string) (*models.VPCFullResponse, error) {
 	path := fmt.Sprintf("/%s/api/spx-ctrl/%s/%s/vpc/%s", orgaID, az, projectID, effectiveID)
 	resp, err := c.do(ctx, http.MethodGet, path, nil, nil)
@@ -56,7 +56,7 @@ func (c *Client) GetVPC(ctx context.Context, orgaID, az, projectID, effectiveID 
 	return &vpc, nil
 }
 
-// UpdateVPC met à jour un VPC existant
+// UpdateVPC updates an existing VPC
 func (c *Client) UpdateVPC(ctx context.Context, orgaID, az, projectID, effectiveID string, body *models.UpdateVPCBody) error {
 	path := fmt.Sprintf("/%s/api/spx-ctrl/%s/%s/vpc/%s", orgaID, az, projectID, effectiveID)
 	resp, err := c.do(ctx, http.MethodPost, path, body, nil)
@@ -67,7 +67,7 @@ func (c *Client) UpdateVPC(ctx context.Context, orgaID, az, projectID, effective
 	return decodeResponse(resp, nil)
 }
 
-// DeleteVPC supprime un VPC
+// DeleteVPC deletes a VPC
 func (c *Client) DeleteVPC(ctx context.Context, orgaID, az, projectID, effectiveID string) error {
 	path := fmt.Sprintf("/%s/api/spx-ctrl/%s/%s/vpc/%s", orgaID, az, projectID, effectiveID)
 	resp, err := c.do(ctx, http.MethodDelete, path, nil, nil)

@@ -18,12 +18,12 @@ func TestSecurityGroupRequest_Validate(t *testing.T) {
 		errMsg  string
 	}{
 		{
-			name:    "Valide avec labels",
+			name:    "Valid with labels",
 			req:     models.SecurityGroupRequest{Name: "sg-test", Target: webTarget},
 			wantErr: false,
 		},
 		{
-			name: "Valide avec expressions",
+			name: "Valid with expressions",
 			req: models.SecurityGroupRequest{
 				Name: "sg-test",
 				Target: models.LabelSelector{
@@ -35,19 +35,19 @@ func TestSecurityGroupRequest_Validate(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name:    "Nom requis",
+			name:    "Name required",
 			req:     models.SecurityGroupRequest{Target: webTarget},
 			wantErr: true,
-			errMsg:  "le nom est requis",
+			errMsg:  "name is required",
 		},
 		{
-			name:    "Invalide sans rien",
+			name:    "Invalid with nothing",
 			req:     models.SecurityGroupRequest{Name: "sg-test"},
 			wantErr: true,
-			errMsg:  "la cible (target) doit contenir soit match_labels, soit match_expressions",
+			errMsg:  "target must contain either match_labels or match_expressions",
 		},
 		{
-			name: "Invalide avec les deux",
+			name: "Invalid with both",
 			req: models.SecurityGroupRequest{
 				Name: "sg-test",
 				Target: models.LabelSelector{
@@ -56,19 +56,19 @@ func TestSecurityGroupRequest_Validate(t *testing.T) {
 				},
 			},
 			wantErr: true,
-			errMsg:  "la cible (target) ne peut pas contenir à la fois match_labels et match_expressions",
+			errMsg:  "target cannot contain both match_labels and match_expressions",
 		},
 		{
-			name: "Label mal formé",
+			name: "Malformed label",
 			req: models.SecurityGroupRequest{
 				Name:   "sg-test",
 				Target: models.LabelSelector{MatchLabels: []string{"app"}},
 			},
 			wantErr: true,
-			errMsg:  "format attendu: clé:valeur",
+			errMsg:  "expected format: key:value",
 		},
 		{
-			name: "Opérateur invalide",
+			name: "Invalid operator",
 			req: models.SecurityGroupRequest{
 				Name: "sg-test",
 				Target: models.LabelSelector{
@@ -76,10 +76,10 @@ func TestSecurityGroupRequest_Validate(t *testing.T) {
 				},
 			},
 			wantErr: true,
-			errMsg:  "opérateur d'expression invalide: Invalid",
+			errMsg:  "invalid expression operator: Invalid",
 		},
 		{
-			name: "Opérateur Exists valide",
+			name: "Valid Exists operator",
 			req: models.SecurityGroupRequest{
 				Name: "sg-test",
 				Target: models.LabelSelector{
@@ -89,25 +89,25 @@ func TestSecurityGroupRequest_Validate(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "Port invalide (trop petit)",
+			name: "Invalid port (too small)",
 			req: models.SecurityGroupRequest{
 				Name: "sg-test", Target: webTarget,
 				Ingress: []models.IngressRule{{Ports: []models.SgPort{{Port: 0, EndPort: 80, Protocol: "TCP"}}}},
 			},
 			wantErr: true,
-			errMsg:  "le port doit être compris entre 1 et 65535",
+			errMsg:  "port must be between 1 and 65535",
 		},
 		{
-			name: "Port invalide (trop grand)",
+			name: "Invalid port (too large)",
 			req: models.SecurityGroupRequest{
 				Name: "sg-test", Target: webTarget,
 				Ingress: []models.IngressRule{{Ports: []models.SgPort{{Port: 70000, EndPort: 80, Protocol: "TCP"}}}},
 			},
 			wantErr: true,
-			errMsg:  "le port doit être compris entre 1 et 65535",
+			errMsg:  "port must be between 1 and 65535",
 		},
 		{
-			name: "EndPort absent (normalisé)",
+			name: "Missing EndPort (normalized)",
 			req: models.SecurityGroupRequest{
 				Name: "sg-test", Target: webTarget,
 				Ingress: []models.IngressRule{{Ports: []models.SgPort{{Port: 80, Protocol: "TCP"}}}},
@@ -115,13 +115,13 @@ func TestSecurityGroupRequest_Validate(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "EndPort invalide (trop grand)",
+			name: "Invalid EndPort (too large)",
 			req: models.SecurityGroupRequest{
 				Name: "sg-test", Target: webTarget,
 				Ingress: []models.IngressRule{{Ports: []models.SgPort{{Port: 80, EndPort: 70000, Protocol: "TCP"}}}},
 			},
 			wantErr: true,
-			errMsg:  "le port final (end_port) doit être compris entre 1 et 65535",
+			errMsg:  "end_port must be between 1 and 65535",
 		},
 		{
 			name: "EndPort < Port",
@@ -130,19 +130,19 @@ func TestSecurityGroupRequest_Validate(t *testing.T) {
 				Ingress: []models.IngressRule{{Ports: []models.SgPort{{Port: 80, EndPort: 79, Protocol: "TCP"}}}},
 			},
 			wantErr: true,
-			errMsg:  "doit être supérieur ou égal au port",
+			errMsg:  "must be greater than or equal to port",
 		},
 		{
-			name: "Protocole invalide",
+			name: "Invalid protocol",
 			req: models.SecurityGroupRequest{
 				Name: "sg-test", Target: webTarget,
 				Ingress: []models.IngressRule{{Ports: []models.SgPort{{Port: 80, Protocol: "ICMP"}}}},
 			},
 			wantErr: true,
-			errMsg:  "protocole invalide: ICMP",
+			errMsg:  "invalid protocol: ICMP",
 		},
 		{
-			name: "Ports valides",
+			name: "Valid ports",
 			req: models.SecurityGroupRequest{
 				Name: "sg-test", Target: webTarget,
 				Ingress: []models.IngressRule{{Ports: []models.SgPort{{Port: 80, EndPort: 80, Protocol: "TCP"}}}},
@@ -151,7 +151,7 @@ func TestSecurityGroupRequest_Validate(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "Ingress AllowAll avec d'autres règles",
+			name: "Ingress AllowAll with other rules",
 			req: models.SecurityGroupRequest{
 				Name: "sg-test", Target: webTarget,
 				Ingress: []models.IngressRule{
@@ -160,10 +160,10 @@ func TestSecurityGroupRequest_Validate(t *testing.T) {
 				},
 			},
 			wantErr: true,
-			errMsg:  "une règle ingress.allow_all=true ne peut pas coexister avec d'autres règles ingress",
+			errMsg:  "an ingress.allow_all=true rule cannot coexist with other ingress rules",
 		},
 		{
-			name: "Egress AllowAll avec d'autres règles",
+			name: "Egress AllowAll with other rules",
 			req: models.SecurityGroupRequest{
 				Name: "sg-test", Target: webTarget,
 				Egress: []models.EgressRule{
@@ -172,10 +172,10 @@ func TestSecurityGroupRequest_Validate(t *testing.T) {
 				},
 			},
 			wantErr: true,
-			errMsg:  "une règle egress.allow_all=true ne peut pas coexister avec d'autres règles egress",
+			errMsg:  "an egress.allow_all=true rule cannot coexist with other egress rules",
 		},
 		{
-			name: "AllowAll seul est valide",
+			name: "AllowAll alone is valid",
 			req: models.SecurityGroupRequest{
 				Name: "sg-test", Target: webTarget,
 				Ingress: []models.IngressRule{{AllowAll: true}},
@@ -184,7 +184,7 @@ func TestSecurityGroupRequest_Validate(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "Valide avec Peer PodSelector",
+			name: "Valid with Peer PodSelector",
 			req: models.SecurityGroupRequest{
 				Name: "sg-test", Target: webTarget,
 				Ingress: []models.IngressRule{{
@@ -195,7 +195,7 @@ func TestSecurityGroupRequest_Validate(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "Valide avec Peer IPBlock CIDR",
+			name: "Valid with Peer IPBlock CIDR",
 			req: models.SecurityGroupRequest{
 				Name: "sg-test", Target: webTarget,
 				Ingress: []models.IngressRule{{
@@ -206,16 +206,16 @@ func TestSecurityGroupRequest_Validate(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "Invalide avec Peer vide",
+			name: "Invalid with empty Peer",
 			req: models.SecurityGroupRequest{
 				Name: "sg-test", Target: webTarget,
 				Ingress: []models.IngressRule{{Ports: []models.SgPort{{Port: 80}}, From: []models.Peer{{}}}},
 			},
 			wantErr: true,
-			errMsg:  "le pair doit contenir soit un sélecteur de pods (pod_selector), soit un bloc IP (ip_block.cidr)",
+			errMsg:  "peer must contain either a pod selector (pod_selector) or an IP block (ip_block.cidr)",
 		},
 		{
-			name: "Invalide avec Egress Peer vide",
+			name: "Invalid with empty Egress Peer",
 			req: models.SecurityGroupRequest{
 				Name: "sg-test", Target: webTarget,
 				Egress: []models.EgressRule{{
@@ -224,10 +224,10 @@ func TestSecurityGroupRequest_Validate(t *testing.T) {
 				}},
 			},
 			wantErr: true,
-			errMsg:  "le pair doit contenir soit un sélecteur de pods (pod_selector), soit un bloc IP (ip_block.cidr)",
+			errMsg:  "peer must contain either a pod selector (pod_selector) or an IP block (ip_block.cidr)",
 		},
 		{
-			name: "10 subnets autorisés",
+			name: "10 subnets allowed",
 			req: models.SecurityGroupRequest{
 				Name: "sg-test", Target: webTarget,
 				SubnetIDs: []string{"s1", "s2", "s3", "s4", "s5", "s6", "s7", "s8", "s9", "s10"},
@@ -235,13 +235,13 @@ func TestSecurityGroupRequest_Validate(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "Plus de 10 subnets",
+			name: "More than 10 subnets",
 			req: models.SecurityGroupRequest{
 				Name: "sg-test", Target: webTarget,
 				SubnetIDs: []string{"s1", "s2", "s3", "s4", "s5", "s6", "s7", "s8", "s9", "s10", "s11"},
 			},
 			wantErr: true,
-			errMsg:  "subnet_ids ne doit pas contenir plus de 10 subnets",
+			errMsg:  "subnet_ids must not contain more than 10 subnets",
 		},
 	}
 
@@ -267,12 +267,12 @@ func TestSecurityGroupRequest_Validate_Normalizes(t *testing.T) {
 		Ingress: []models.IngressRule{{Ports: []models.SgPort{{Port: 443, Protocol: "udp"}, {Port: 80}}}},
 	}
 	assert.NoError(t, req.Validate())
-	assert.Equal(t, models.PortNumber(443), req.Ingress[0].Ports[0].EndPort, "end_port vaut port par défaut")
-	assert.Equal(t, "UDP", req.Ingress[0].Ports[0].Protocol, "protocole mis en majuscules")
-	assert.Equal(t, "TCP", req.Ingress[0].Ports[1].Protocol, "protocole TCP par défaut")
+	assert.Equal(t, models.PortNumber(443), req.Ingress[0].Ports[0].EndPort, "end_port defaults to port")
+	assert.Equal(t, "UDP", req.Ingress[0].Ports[0].Protocol, "protocol uppercased")
+	assert.Equal(t, "TCP", req.Ingress[0].Ports[1].Protocol, "TCP protocol by default")
 }
 
-// Le provider Terraform envoie les ports sous forme de chaînes : ils doivent rester acceptés.
+// The Terraform provider sends ports as strings: they must stay accepted.
 func TestPortNumber_UnmarshalJSON(t *testing.T) {
 	var p models.SgPort
 	assert.NoError(t, json.Unmarshal([]byte(`{"port": "8080", "endPort": "", "protocol": "TCP"}`), &p))
@@ -285,7 +285,7 @@ func TestPortNumber_UnmarshalJSON(t *testing.T) {
 
 	assert.Error(t, json.Unmarshal([]byte(`{"port": "http"}`), &p))
 
-	// Toujours sérialisé en nombre
+	// Always serialized as a number
 	out, _ := json.Marshal(models.SgPort{Port: 80, EndPort: 81, Protocol: "TCP"})
 	assert.JSONEq(t, `{"port": 80, "endPort": 81, "protocol": "TCP"}`, string(out))
 }

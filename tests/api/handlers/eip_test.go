@@ -31,22 +31,22 @@ func TestEipHandler_AuthorizationHeader(t *testing.T) {
 		expectedError  string
 	}{
 		{
-			name:           "Header manquant",
+			name:           "Missing header",
 			authHeader:     "",
 			expectedStatus: http.StatusUnauthorized,
-			expectedError:  "Header Authorization manquant",
+			expectedError:  "Missing Authorization header",
 		},
 		{
-			name:           "Format invalide (pas de api-token)",
+			name:           "Invalid format (no api-token)",
 			authHeader:     "token123",
 			expectedStatus: http.StatusUnauthorized,
-			expectedError:  "Format du token invalide (attendu: api-token {token})",
+			expectedError:  "Invalid token format (expected: api-token {token})",
 		},
 		{
-			name:           "Format invalide (api-token seul)",
+			name:           "Invalid format (api-token alone)",
 			authHeader:     "api-token ",
 			expectedStatus: http.StatusUnauthorized,
-			expectedError:  "Format du token invalide (attendu: api-token {token})",
+			expectedError:  "Invalid token format (expected: api-token {token})",
 		},
 	}
 
@@ -69,17 +69,17 @@ func TestEipHandler_AuthorizationHeader(t *testing.T) {
 
 			err := h.CreateEip(c)
 
-			// Le middleware Echo peut transformer l'erreur en réponse si c'est un HTTPError
+			// The Echo middleware may turn the error into a response if it is an HTTPError
 			if err != nil {
 				he, ok := err.(*echo.HTTPError)
 				if ok {
 					assert.Equal(t, tt.expectedStatus, he.Code)
 					assert.Contains(t, he.Message.(string), tt.expectedError)
 				} else {
-					t.Fatalf("Attendu echo.HTTPError, got %v", err)
+					t.Fatalf("Expected echo.HTTPError, got %v", err)
 				}
 			} else {
-				// Si pas d'erreur retournée par le handler, on check le recorder
+				// If the handler returned no error, check the recorder
 				assert.Equal(t, tt.expectedStatus, rec.Code)
 				var resp map[string]string
 				json.Unmarshal(rec.Body.Bytes(), &resp)
@@ -147,7 +147,7 @@ func TestEipHandler_AllEndpoints_Authorization(t *testing.T) {
 
 			req := httptest.NewRequest(tt.method, tt.path, &buf)
 			req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-			// On ne met pas de header Authorization
+			// No Authorization header
 
 			rec := httptest.NewRecorder()
 			c := e.NewContext(req, rec)
@@ -177,7 +177,7 @@ func TestEipHandler_AllEndpoints_Authorization(t *testing.T) {
 				he, ok := err.(*echo.HTTPError)
 				if ok {
 					assert.Equal(t, http.StatusUnauthorized, he.Code)
-					assert.Contains(t, he.Message.(string), "Header Authorization manquant")
+					assert.Contains(t, he.Message.(string), "Missing Authorization header")
 				}
 			}
 		})
@@ -185,7 +185,7 @@ func TestEipHandler_AllEndpoints_Authorization(t *testing.T) {
 }
 
 func TestEipHandler_DeleteEip(t *testing.T) {
-	// Setup du mock server
+	// Mock server setup
 	calls := 0
 	mockServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		calls++
@@ -196,7 +196,7 @@ func TestEipHandler_DeleteEip(t *testing.T) {
 		}
 		if r.Method == http.MethodGet {
 			assert.Contains(t, r.URL.Path, "/eip/eip-789")
-			// Simuler que l'EIP n'est plus là au premier GET
+			// Simulate the EIP being gone on the first GET
 			w.WriteHeader(http.StatusNotFound)
 			return
 		}
@@ -217,35 +217,35 @@ func TestEipHandler_DeleteEip(t *testing.T) {
 	c.SetParamNames("orga_id", "az", "project_id", "id")
 	c.SetParamValues("orga-1", "az1", "proj-1", "eip-789")
 
-	// Exécution
+	// Execution
 	err := h.DeleteEip(c)
 
 	// Assertions
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusNoContent, rec.Code)
-	assert.Equal(t, 2, calls, "Doit faire un DELETE puis un GET")
+	assert.Equal(t, 2, calls, "Must issue a DELETE then a GET")
 }
 
 func TestEipHandler_DeleteEip_Retry(t *testing.T) {
-	// Setup du mock server
+	// Mock server setup
 	deleteCalls := 0
 	getCalls := 0
 	mockServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodDelete {
 			deleteCalls++
 			if deleteCalls == 1 {
-				// Premier appel échoue (500)
+				// First call fails (500)
 				w.WriteHeader(http.StatusInternalServerError)
 				fmt.Fprint(w, `{"error": "Simulated failure"}`)
 				return
 			}
-			// Second appel réussit (204)
+			// Second call succeeds (204)
 			w.WriteHeader(http.StatusNoContent)
 			return
 		}
 		if r.Method == http.MethodGet {
 			getCalls++
-			// Simule la disparition de l'objet après le DELETE réussi
+			// Simulate the object disappearing after the successful DELETE
 			w.WriteHeader(http.StatusNotFound)
 			return
 		}
@@ -257,7 +257,7 @@ func TestEipHandler_DeleteEip_Retry(t *testing.T) {
 	configStore := store.NewConfigStore()
 	configStore.SetEndpoint(mockServer.URL)
 	h := handlers.NewEipHandler(configStore)
-	// On réduit l'intervalle de polling pour le test
+	// Shorten the polling interval for the test
 	h.PollingInterval = 10 * time.Millisecond
 
 	req := httptest.NewRequest(http.MethodDelete, "/orga-1/az1/proj-1/eips/eip-123", nil)
@@ -267,12 +267,12 @@ func TestEipHandler_DeleteEip_Retry(t *testing.T) {
 	c.SetParamNames("orga_id", "az", "project_id", "id")
 	c.SetParamValues("orga-1", "az1", "proj-1", "eip-123")
 
-	// Exécution
+	// Execution
 	err := h.DeleteEip(c)
 
 	// Assertions
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusNoContent, rec.Code)
-	assert.Equal(t, 2, deleteCalls, "Doit avoir appelé DELETE 2 fois (initial + retry)")
-	assert.True(t, getCalls >= 1, "Doit avoir appelé GET au moins une fois pour le polling")
+	assert.Equal(t, 2, deleteCalls, "Must have called DELETE twice (initial + retry)")
+	assert.True(t, getCalls >= 1, "Must have called GET at least once for polling")
 }

@@ -16,7 +16,7 @@ import (
 )
 
 func TestDiskHandler_GetDisk_Mapping(t *testing.T) {
-	// Données de réponse SPX simulées
+	// Simulated SPX response data
 	spxResponse := `{
 		"eid": "disk-123",
 		"productName": "mon-disque",
@@ -60,7 +60,7 @@ func TestDiskHandler_GetDisk_Mapping(t *testing.T) {
 	c.SetParamNames("orga_id", "az", "project_id", "id")
 	c.SetParamValues("orga-1", "az1", "proj-1", "disk-123")
 
-	// Exécution
+	// Execution
 	err := h.GetDisk(c)
 
 	// Assertions
@@ -71,7 +71,7 @@ func TestDiskHandler_GetDisk_Mapping(t *testing.T) {
 	err = json.Unmarshal(rec.Body.Bytes(), &resp)
 	assert.NoError(t, err)
 
-	// Vérification du mapping
+	// Check the mapping
 	assert.Equal(t, "disk-123", resp.ID)
 	assert.Equal(t, "mon-disque", resp.Name)
 	assert.Equal(t, 10, resp.Size)
@@ -82,7 +82,7 @@ func TestDiskHandler_GetDisk_Mapping(t *testing.T) {
 }
 
 func TestDiskHandler_GetDisk_SnapshotMapping(t *testing.T) {
-	// Données de réponse SPX simulées pour un snapshot
+	// Simulated SPX response data for a snapshot
 	spxResponse := `{
 		"eid": "disk-456",
 		"productName": "disque-snapshot",
@@ -126,7 +126,7 @@ func TestDiskHandler_GetDisk_SnapshotMapping(t *testing.T) {
 	c.SetParamNames("orga_id", "az", "project_id", "id")
 	c.SetParamValues("orga-1", "az1", "proj-1", "disk-456")
 
-	// Exécution
+	// Execution
 	err := h.GetDisk(c)
 
 	// Assertions
@@ -137,14 +137,14 @@ func TestDiskHandler_GetDisk_SnapshotMapping(t *testing.T) {
 	err = json.Unmarshal(rec.Body.Bytes(), &resp)
 	assert.NoError(t, err)
 
-	// Vérification du mapping
+	// Check the mapping
 	assert.Equal(t, "disk-456", resp.ID)
 	assert.Equal(t, "snapshot", resp.Source.Type)
 	assert.Equal(t, "disk-parent", resp.Source.Snapshot)
 }
 
 func TestDiskHandler_GetDisk_CloneMapping(t *testing.T) {
-	// Données de réponse SPX simulées pour un clone
+	// Simulated SPX response data for a clone
 	spxResponse := `{
 		"eid": "disk-789",
 		"productName": "disque-clone",
@@ -184,7 +184,7 @@ func TestDiskHandler_GetDisk_CloneMapping(t *testing.T) {
 	c.SetParamNames("orga_id", "az", "project_id", "id")
 	c.SetParamValues("orga-1", "az1", "proj-1", "disk-789")
 
-	// Exécution
+	// Execution
 	err := h.GetDisk(c)
 
 	// Assertions
@@ -194,13 +194,13 @@ func TestDiskHandler_GetDisk_CloneMapping(t *testing.T) {
 	var resp models.Disk
 	json.Unmarshal(rec.Body.Bytes(), &resp)
 
-	// Vérification du mapping
+	// Check the mapping
 	assert.Equal(t, "clone", resp.Source.Type)
 	assert.Equal(t, "disk-original", resp.Source.Clone)
 }
 
 func TestDiskHandler_GetDisk_RegistryMapping(t *testing.T) {
-	// Données de réponse SPX simulées pour registry
+	// Simulated SPX response data for registry
 	spxResponse := `{
 		"eid": "disk-101",
 		"productName": "disque-registry",
@@ -240,7 +240,7 @@ func TestDiskHandler_GetDisk_RegistryMapping(t *testing.T) {
 	c.SetParamNames("orga_id", "az", "project_id", "id")
 	c.SetParamValues("orga-1", "az1", "proj-1", "disk-101")
 
-	// Exécution
+	// Execution
 	err := h.GetDisk(c)
 
 	// Assertions
@@ -250,15 +250,15 @@ func TestDiskHandler_GetDisk_RegistryMapping(t *testing.T) {
 	var resp models.Disk
 	json.Unmarshal(rec.Body.Bytes(), &resp)
 
-	// Vérification du mapping
+	// Check the mapping
 	assert.Equal(t, "registry", resp.Source.Type)
 	assert.Equal(t, "docker://registry.example.com/image:latest", resp.Source.URL)
 }
 
 func TestDiskHandler_UpdateDisk(t *testing.T) {
-	// Données de requête
+	// Request data
 	updateReq := models.DiskRequest{
-		Name:         "nouveau-nom",
+		Name:         "new-name",
 		Size:         20,
 		StorageClass: "fast",
 		Source: &models.DiskSource{
@@ -268,15 +268,15 @@ func TestDiskHandler_UpdateDisk(t *testing.T) {
 
 	mockServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodPut {
-			// Vérifier que le corps envoyé à SPX contient bien tous les champs
+			// Check that the body sent to SPX contains all the fields
 			var body map[string]interface{}
 			json.NewDecoder(r.Body).Decode(&body)
 
 			general := body["general"].(map[string]interface{})
-			assert.Equal(t, "nouveau-nom", general["productName"])
+			assert.Equal(t, "new-name", general["productName"])
 			assert.Equal(t, "20", general["storage"])
 
-			// Vérifier que les autres champs ne sont plus envoyés
+			// Check that the other fields are no longer sent
 			assert.Nil(t, general["storageClass"])
 			assert.Nil(t, general["source"])
 
@@ -285,10 +285,10 @@ func TestDiskHandler_UpdateDisk(t *testing.T) {
 		}
 
 		if r.Method == http.MethodGet {
-			// Simuler GetDisk après l'update
+			// Simulate GetDisk after the update
 			spxResponse := `{
 				"eid": "disk-123",
-				"productName": "nouveau-nom",
+				"productName": "new-name",
 				"codeAZ": "az1",
 				"disk": {
 					"spec": {
@@ -323,7 +323,7 @@ func TestDiskHandler_UpdateDisk(t *testing.T) {
 	c.SetParamNames("orga_id", "az", "project_id", "id")
 	c.SetParamValues("orga-1", "az1", "proj-1", "disk-123")
 
-	// Exécution
+	// Execution
 	err := h.UpdateDisk(c)
 
 	// Assertions
@@ -333,7 +333,7 @@ func TestDiskHandler_UpdateDisk(t *testing.T) {
 	var resp models.Disk
 	err = json.Unmarshal(rec.Body.Bytes(), &resp)
 	assert.NoError(t, err)
-	assert.Equal(t, "nouveau-nom", resp.Name)
+	assert.Equal(t, "new-name", resp.Name)
 	assert.Equal(t, 20, resp.Size)
 	assert.Equal(t, "fast", resp.StorageClass)
 }
@@ -348,7 +348,7 @@ func TestDiskHandler_UpdateDisk_Labels(t *testing.T) {
 			w.WriteHeader(http.StatusOK)
 			return
 		}
-		// Labels mis à jour sur le PVC, le DataVolume garde les labels de création
+		// Labels updated on the PVC, the DataVolume keeps the creation labels
 		w.Header().Set("Content-Type", "application/json")
 		fmt.Fprint(w, `{
 			"eid": "disk-123",
@@ -390,7 +390,7 @@ func TestDiskHandler_UpdateDisk_Labels(t *testing.T) {
 
 	var disk models.Disk
 	assert.NoError(t, json.Unmarshal(rec.Body.Bytes(), &disk))
-	// Labels lus sur le PVC, filtrés et triés
+	// Labels read from the PVC, filtered and sorted
 	assert.Equal(t, []string{"user.superphenix.net/env:prod", "user.superphenix.net/team:backend"}, disk.Labels)
 }
 
@@ -406,7 +406,7 @@ func TestDiskRequest_Validate_Labels(t *testing.T) {
 	}
 }
 
-// L'API SPX ne renvoie plus storageClassName dans la spec du disque : elle doit être lue sur le PVC
+// The SPX API no longer returns storageClassName in the disk spec: it must be read from the PVC
 func TestDiskHandler_GetDisk_StorageClassFromPVC(t *testing.T) {
 	spxResponse := `{
 		"eid": "disk-123",

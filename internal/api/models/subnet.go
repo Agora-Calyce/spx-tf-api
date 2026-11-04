@@ -11,7 +11,7 @@ const (
 	ProtocolDual = "Dual"
 )
 
-// Subnet représente la ressource Subnet pour Terraform.
+// Subnet represents the Subnet resource for Terraform.
 type Subnet struct {
 	ID           string `json:"id" example:"subnet-12345"`
 	Name         string `json:"name" example:"mon-subnet"`
@@ -27,7 +27,7 @@ type Subnet struct {
 	NatGatewayIp string `json:"nat_gateway_ip,omitempty" example:"10.0.1.1"`
 }
 
-// SubnetRequest représente le corps de la requête pour créer ou mettre à jour un Subnet.
+// SubnetRequest represents the request body to create or update a Subnet.
 type SubnetRequest struct {
 	Name       string `json:"name" example:"mon-subnet"`
 	VPCID      string `json:"vpc_id" example:"vpc-12345"`
@@ -40,35 +40,35 @@ type SubnetRequest struct {
 	NatGateway bool   `json:"nat_gateway" example:"false"`
 }
 
-// Validate vérifie les contraintes sur le Subnet.
+// Validate checks the constraints on the Subnet.
 func (s *SubnetRequest) Validate() error {
 	if s.Name == "" {
-		return errors.New("le nom est requis")
+		return errors.New("name is required")
 	}
 	if len(s.Name) > 63 {
-		return fmt.Errorf("le nom ne doit pas dépasser 63 caractères (actuel: %d)", len(s.Name))
+		return fmt.Errorf("name must not exceed 63 characters (current: %d)", len(s.Name))
 	}
 	if s.VPCID == "" {
-		return errors.New("le vpc_id est requis")
+		return errors.New("vpc_id is required")
 	}
 
 	switch s.Protocol {
 	case ProtocolIPv4:
 		if s.IPv4 == "" {
-			return errors.New("le champ ipv4 est obligatoire pour le protocole IPv4")
+			return errors.New("the ipv4 field is required for the IPv4 protocol")
 		}
 	case ProtocolIPv6:
 		if s.IPv6 == "" {
-			return errors.New("le champ ipv6 est obligatoire pour le protocole IPv6")
+			return errors.New("the ipv6 field is required for the IPv6 protocol")
 		}
 	case ProtocolDual:
 		if s.IPv4 == "" || s.IPv6 == "" {
-			return errors.New("les deux champs ipv4 et ipv6 sont obligatoires pour le protocole Dual")
+			return errors.New("both ipv4 and ipv6 fields are required for the Dual protocol")
 		}
 	case "":
-		return errors.New("le protocole est obligatoire (IPv4, IPv6 ou Dual)")
+		return errors.New("protocol is required (IPv4, IPv6 or Dual)")
 	default:
-		return fmt.Errorf("protocole invalide: %s (doit être IPv4, IPv6 ou Dual)", s.Protocol)
+		return fmt.Errorf("invalid protocol: %s (must be IPv4, IPv6 or Dual)", s.Protocol)
 	}
 
 	return nil

@@ -8,7 +8,7 @@ import (
 	"github.com/Agora-Calyce/spx-tf-api/pkg/client/spx/models"
 )
 
-// ListGroups liste les groupes d'une organisation
+// ListGroups lists the groups of an organization
 func (c *Client) ListGroups(ctx context.Context, orgaID string) ([]models.APIGroup, error) {
 	path := fmt.Sprintf("/v1/organization/%s/iam/group", orgaID)
 	resp, err := c.do(ctx, http.MethodGet, path, nil, nil)
@@ -24,7 +24,7 @@ func (c *Client) ListGroups(ctx context.Context, orgaID string) ([]models.APIGro
 	return groups, nil
 }
 
-// GetGroup récupère un groupe par son ID
+// GetGroup retrieves a group by its ID
 func (c *Client) GetGroup(ctx context.Context, orgaID, groupID string) (*models.APIGroup, error) {
 	path := fmt.Sprintf("/v1/organization/%s/iam/group/%s", orgaID, groupID)
 	resp, err := c.do(ctx, http.MethodGet, path, nil, nil)
@@ -40,7 +40,7 @@ func (c *Client) GetGroup(ctx context.Context, orgaID, groupID string) (*models.
 	return &group, nil
 }
 
-// ListPermissionSets liste les sets de permissions disponibles dans une organisation
+// ListPermissionSets lists the permission sets available in an organization
 func (c *Client) ListPermissionSets(ctx context.Context, orgaID string) ([]string, error) {
 	path := fmt.Sprintf("/v1/organization/%s/iam/permissionSets", orgaID)
 	resp, err := c.do(ctx, http.MethodGet, path, nil, nil)

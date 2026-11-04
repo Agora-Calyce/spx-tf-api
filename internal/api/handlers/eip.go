@@ -14,13 +14,13 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-// EipHandler gère les requêtes liées aux EIP.
+// EipHandler handles requests related to EIPs.
 type EipHandler struct {
 	configStore     *store.ConfigStore
 	PollingInterval time.Duration
 }
 
-// NewEipHandler crée un nouveau EipHandler.
+// NewEipHandler creates a new EipHandler.
 func NewEipHandler(configStore *store.ConfigStore) *EipHandler {
 	return &EipHandler{
 		configStore:     configStore,
@@ -28,32 +28,32 @@ func NewEipHandler(configStore *store.ConfigStore) *EipHandler {
 	}
 }
 
-// getSPXClient helper pour obtenir un client configuré à partir du header Authorization
+// getSPXClient is a helper to get a client configured from the Authorization header
 func (h *EipHandler) getSPXClient(c echo.Context) (*spx.Client, error) {
 	endpoint := h.configStore.GetEndpoint()
 	if endpoint == "" {
-		return nil, echo.NewHTTPError(http.StatusInternalServerError, "Endpoint API non configuré au démarrage")
+		return nil, echo.NewHTTPError(http.StatusInternalServerError, "API endpoint not configured at startup")
 	}
 
 	authHeader := c.Request().Header.Get("Authorization")
 	if authHeader == "" {
-		return nil, echo.NewHTTPError(http.StatusUnauthorized, "Header Authorization manquant")
+		return nil, echo.NewHTTPError(http.StatusUnauthorized, "Missing Authorization header")
 	}
 
 	token := strings.TrimPrefix(authHeader, "api-token ")
 	if token == "" || token == authHeader {
-		return nil, echo.NewHTTPError(http.StatusUnauthorized, "Format du token invalide (attendu: api-token {token})")
+		return nil, echo.NewHTTPError(http.StatusUnauthorized, "Invalid token format (expected: api-token {token})")
 	}
 
 	client, err := spx.NewClient(endpoint, token)
 	if err != nil {
-		return nil, echo.NewHTTPError(http.StatusInternalServerError, "Erreur création client API")
+		return nil, echo.NewHTTPError(http.StatusInternalServerError, "Error creating API client")
 	}
 
 	return client, nil
 }
 
-// mapEipFromSPX convertit une réponse SPX en modèle Eip pour le proxy
+// mapEipFromSPX converts an SPX response into an Eip model for the proxy
 func (h *EipHandler) mapEipFromSPX(r *spxmodels.EipFullResponse, az string) *models.Eip {
 	m := &models.Eip{
 		ID:   r.EID,
@@ -64,19 +64,19 @@ func (h *EipHandler) mapEipFromSPX(r *spxmodels.EipFullResponse, az string) *mod
 	if r.Eip != nil {
 		if eipMap, ok := r.Eip.(map[string]interface{}); ok {
 			if spec, ok := eipMap["spec"].(map[string]interface{}); ok {
-				// Récupération du SubnetID depuis natGwDp (demande utilisateur)
+				// Get the SubnetID from natGwDp (user request)
 				if natGwDp, ok := spec["natGwDp"].(string); ok {
 					m.SubnetEId = natGwDp
 				}
 
-				// Fallback sur subnetEid si natGwDp est absent
+				// Fallback to subnetEid if natGwDp is missing
 				if m.SubnetEId == "" {
 					if subnetEId, ok := spec["subnetEid"].(string); ok {
 						m.SubnetEId = subnetEId
 					}
 				}
 
-				// Récupération de l'InternalIP (fallback historique)
+				// Get InternalIP (legacy fallback)
 				if internalIP, ok := spec["internalIP"].(string); ok {
 					m.InternalIP = internalIP
 				} else if internalIP, ok := spec["internalIp"].(string); ok {
@@ -84,18 +84,18 @@ func (h *EipHandler) mapEipFromSPX(r *spxmodels.EipFullResponse, az string) *mod
 				}
 			}
 
-			// Champs de statut
+			// Status fields
 			if status, ok := eipMap["status"].(map[string]interface{}); ok {
 				if r.ProductTypeID == "eip" {
 					if ip, ok := status["ip"].(string); ok {
 						m.ExternalIP = ip
 					}
-					// Mapping de nat (fip, snat, dnat ou combinaisons)
+					// nat mapping (fip, snat, dnat or combinations)
 					if nat, ok := status["nat"].(string); ok {
 						m.Nat = nat
 					}
 				} else {
-					// Fallback historique sur externalIP dans status
+					// Legacy fallback to externalIP in status
 					if externalIP, ok := status["externalIP"].(string); ok {
 						m.ExternalIP = externalIP
 					}
@@ -104,10 +104,10 @@ func (h *EipHandler) mapEipFromSPX(r *spxmodels.EipFullResponse, az string) *mod
 		}
 	}
 
-	// Récupération de l'internalIp et externalIP depuis le champ fip (prioritaire)
+	// Get internalIp and externalIP from the fip field (takes priority)
 	if r.Fip != nil {
 		if fipMap, ok := r.Fip.(map[string]interface{}); ok {
-			// Récupération de l'internalIp depuis spec (Nouvelle demande)
+			// Get internalIp from spec (new request)
 			if spec, ok := fipMap["spec"].(map[string]interface{}); ok {
 				if internalIP, ok := spec["internalIp"].(string); ok && internalIP != "" {
 					m.InternalIP = internalIP
@@ -116,9 +116,9 @@ func (h *EipHandler) mapEipFromSPX(r *spxmodels.EipFullResponse, az string) *mod
 				}
 			}
 
-			// Récupération depuis status (Fallback et externalIP)
+			// Get from status (fallback and externalIP)
 			if status, ok := fipMap["status"].(map[string]interface{}); ok {
-				// Fallback si non trouvé dans spec
+				// Fallback if not found in spec
 				if m.InternalIP == "" {
 					if internalIP, ok := status["internalIp"].(string); ok && internalIP != "" {
 						m.InternalIP = internalIP
@@ -134,7 +134,7 @@ func (h *EipHandler) mapEipFromSPX(r *spxmodels.EipFullResponse, az string) *mod
 		}
 	}
 
-	// Récupération du SNAT (Tableau de CIDRs depuis .snat[].spec.internalCIDR)
+	// Get the SNAT (array of CIDRs from .snat[].spec.internalCIDR)
 	if r.SNat != nil {
 		if snatList, ok := r.SNat.([]interface{}); ok {
 			for _, item := range snatList {
@@ -147,7 +147,7 @@ func (h *EipHandler) mapEipFromSPX(r *spxmodels.EipFullResponse, az string) *mod
 				}
 			}
 		} else if snatMap, ok := r.SNat.(map[string]interface{}); ok {
-			// Fallback ancien format
+			// Legacy format fallback
 			if spec, ok := snatMap["spec"].(map[string]interface{}); ok {
 				if snatList, ok := spec["snat"].([]interface{}); ok {
 					for _, s := range snatList {
@@ -160,7 +160,7 @@ func (h *EipHandler) mapEipFromSPX(r *spxmodels.EipFullResponse, az string) *mod
 		}
 	}
 
-	// Récupération du DNAT (Tableau d'objets depuis .dnat[].spec)
+	// Get the DNAT (array of objects from .dnat[].spec)
 	if r.DNat != nil {
 		if dnatList, ok := r.DNat.([]interface{}); ok {
 			for _, item := range dnatList {
@@ -172,7 +172,7 @@ func (h *EipHandler) mapEipFromSPX(r *spxmodels.EipFullResponse, az string) *mod
 							InternalPort: fmt.Sprintf("%v", spec["internalPort"]),
 							Protocol:     strings.ToLower(fmt.Sprintf("%v", spec["protocol"])),
 						}
-						// Fallback sur internalIP (majuscule P)
+						// Fallback to internalIP (uppercase P)
 						if (spec["internalIp"] == nil || spec["internalIp"] == "") && spec["internalIP"] != nil {
 							dnat.InternalIP = fmt.Sprintf("%v", spec["internalIP"])
 						}
@@ -181,7 +181,7 @@ func (h *EipHandler) mapEipFromSPX(r *spxmodels.EipFullResponse, az string) *mod
 				}
 			}
 		} else if dnatMap, ok := r.DNat.(map[string]interface{}); ok {
-			// Fallback ancien format
+			// Legacy format fallback
 			if spec, ok := dnatMap["spec"].(map[string]interface{}); ok {
 				if dnatList, ok := spec["dnat"].([]interface{}); ok {
 					for _, d := range dnatList {
@@ -203,15 +203,15 @@ func (h *EipHandler) mapEipFromSPX(r *spxmodels.EipFullResponse, az string) *mod
 	return m
 }
 
-// CreateEip crée un nouveau EIP.
-// @Summary Créer un EIP
-// @Description Crée une nouvelle ressource EIP en appelant l'API SPX.
+// CreateEip creates a new EIP.
+// @Summary Create an EIP
+// @Description Creates a new EIP resource by calling the SPX API.
 // @Tags eip
 // @Accept json
 // @Produce json
-// @Param orga_id path string true "ID de l'organisation"
-// @Param az path string true "Zone de disponibilité"
-// @Param project_id path string true "ID du projet"
+// @Param orga_id path string true "Organization ID"
+// @Param az path string true "Availability zone"
+// @Param project_id path string true "Project ID"
 // @Param eip body models.EipRequest true "EIP Request Body"
 // @Param Authorization header string true "api-token {token}"
 // @Success 201 {object} models.Eip
@@ -225,12 +225,12 @@ func (h *EipHandler) CreateEip(c echo.Context) error {
 	projectID := c.Param("project_id")
 
 	if orgaID == "" || az == "" || projectID == "" {
-		return c.JSON(http.StatusBadRequest, map[string]string{"error": "orga_id, az et project_id sont requis dans l'URL"})
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": "orga_id, az and project_id are required in the URL"})
 	}
 
 	var req models.EipRequest
 	if err := c.Bind(&req); err != nil {
-		return c.JSON(http.StatusBadRequest, map[string]string{"error": "corps de requête invalide"})
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": "invalid request body"})
 	}
 
 	if err := req.Validate(); err != nil {
@@ -258,7 +258,7 @@ func (h *EipHandler) CreateEip(c echo.Context) error {
 
 	resp, err := client.CreateEip(c.Request().Context(), orgaID, az, projectID, spxReq)
 	if err != nil {
-		return c.JSON(spxStatus(err, http.StatusInternalServerError), map[string]string{"error": fmt.Sprintf("Erreur API SPX: %v", err)})
+		return c.JSON(spxStatus(err, http.StatusInternalServerError), map[string]string{"error": fmt.Sprintf("SPX API error: %v", err)})
 	}
 
 	fullResp, err := h.fetchEipFromSPXWithRetry(c.Request().Context(), client, orgaID, az, projectID, resp.EID, false)
@@ -278,7 +278,7 @@ func (h *EipHandler) CreateEip(c echo.Context) error {
 }
 
 func (h *EipHandler) fetchEipFromSPXWithRetry(ctx context.Context, client *spx.Client, orgaID, az, projectID, id string, skipFirstReady bool) (*spxmodels.EipFullResponse, error) {
-	maxRetries := 24 // 24 * intervalle
+	maxRetries := 24 // 24 * interval
 	interval := h.PollingInterval
 	if interval == 0 {
 		interval = 5 * time.Second
@@ -303,16 +303,16 @@ func (h *EipHandler) fetchEipFromSPXWithRetry(ctx context.Context, client *spx.C
 			}
 
 			if ready {
-				// Si on nous demande d'ignorer le premier état ready (cas de l'update)
+				// If asked to ignore the first ready state (update case)
 				if i == 0 && skipFirstReady {
-					// On continue la boucle pour attendre le prochain cycle
+					// Continue the loop to wait for the next cycle
 				} else {
 					return resp, nil
 				}
 			}
-			// Pas encore prêt ou premier ready ignoré, on attend
+			// Not ready yet or first ready ignored, keep waiting
 		} else {
-			// Pas un type "eip", pas de retry spécifique demandé
+			// Not an "eip" type, no specific retry requested
 			return resp, nil
 		}
 
@@ -320,21 +320,21 @@ func (h *EipHandler) fetchEipFromSPXWithRetry(ctx context.Context, client *spx.C
 		case <-ctx.Done():
 			return nil, ctx.Err()
 		case <-time.After(interval):
-			// Continuer la boucle
+			// Continue the loop
 		}
 	}
 
-	return nil, fmt.Errorf("timeout : les données EIP ne sont pas devenues disponibles après 2 minutes")
+	return nil, fmt.Errorf("timeout: EIP data did not become available after 2 minutes")
 }
 
-// GetEip récupère un EIP par son ID.
-// @Summary Récupérer un EIP
-// @Description Récupère les détails d'un EIP en appelant l'API SPX.
+// GetEip retrieves an EIP by its ID.
+// @Summary Get an EIP
+// @Description Retrieves the details of an EIP by calling the SPX API.
 // @Tags eip
 // @Produce json
-// @Param orga_id path string true "ID de l'organisation"
-// @Param az path string true "Zone de disponibilité"
-// @Param project_id path string true "ID du projet"
+// @Param orga_id path string true "Organization ID"
+// @Param az path string true "Availability zone"
+// @Param project_id path string true "Project ID"
 // @Param id path string true "EIP ID (Effective ID)"
 // @Param Authorization header string true "api-token {token}"
 // @Success 200 {object} models.Eip
@@ -355,21 +355,21 @@ func (h *EipHandler) GetEip(c echo.Context) error {
 
 	resp, err := h.fetchEipFromSPXWithRetry(c.Request().Context(), client, orgaID, az, projectID, id, false)
 	if err != nil {
-		return c.JSON(spxStatus(err, http.StatusNotFound), map[string]string{"error": "EIP non trouvé sur SPX"})
+		return c.JSON(spxStatus(err, http.StatusNotFound), map[string]string{"error": "EIP not found on SPX"})
 	}
 
 	return c.JSON(http.StatusOK, h.mapEipFromSPX(resp, az))
 }
 
-// UpdateEip met à jour un EIP existant.
-// @Summary Mettre à jour un EIP
-// @Description Met à jour un EIP en appelant l'API SPX.
+// UpdateEip updates an existing EIP.
+// @Summary Update an EIP
+// @Description Updates an EIP by calling the SPX API.
 // @Tags eip
 // @Accept json
 // @Produce json
-// @Param orga_id path string true "ID de l'organisation"
-// @Param az path string true "Zone de disponibilité"
-// @Param project_id path string true "ID du projet"
+// @Param orga_id path string true "Organization ID"
+// @Param az path string true "Availability zone"
+// @Param project_id path string true "Project ID"
 // @Param id path string true "EIP ID (Effective ID)"
 // @Param eip body models.EipRequest true "EIP Request Body"
 // @Param Authorization header string true "api-token {token}"
@@ -386,7 +386,7 @@ func (h *EipHandler) UpdateEip(c echo.Context) error {
 
 	var req models.EipRequest
 	if err := c.Bind(&req); err != nil {
-		return c.JSON(http.StatusBadRequest, map[string]string{"error": "corps de requête invalide"})
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": "invalid request body"})
 	}
 
 	if err := req.Validate(); err != nil {
@@ -413,24 +413,24 @@ func (h *EipHandler) UpdateEip(c echo.Context) error {
 
 	err = client.UpdateEip(c.Request().Context(), orgaID, az, projectID, id, spxReq)
 	if err != nil {
-		return c.JSON(spxStatus(err, http.StatusInternalServerError), map[string]string{"error": fmt.Sprintf("Erreur API SPX: %v", err)})
+		return c.JSON(spxStatus(err, http.StatusInternalServerError), map[string]string{"error": fmt.Sprintf("SPX API error: %v", err)})
 	}
 
 	respGet, err := h.fetchEipFromSPXWithRetry(c.Request().Context(), client, orgaID, az, projectID, id, true)
 	if err != nil {
-		return c.JSON(spxStatus(err, http.StatusInternalServerError), map[string]string{"error": fmt.Sprintf("EIP mis à jour mais erreur lors de la récupération: %v", err)})
+		return c.JSON(spxStatus(err, http.StatusInternalServerError), map[string]string{"error": fmt.Sprintf("EIP updated but error while fetching it: %v", err)})
 	}
 
 	return c.JSON(http.StatusOK, h.mapEipFromSPX(respGet, az))
 }
 
-// DeleteEip supprime un EIP et attend sa suppression effective.
-// @Summary Supprimer un EIP
-// @Description Supprime un EIP en appelant l'API SPX et attend sa disparition réelle.
+// DeleteEip deletes an EIP and waits for its actual deletion.
+// @Summary Delete an EIP
+// @Description Deletes an EIP by calling the SPX API and waits until it is actually gone.
 // @Tags eip
-// @Param orga_id path string true "ID de l'organisation"
-// @Param az path string true "Zone de disponibilité"
-// @Param project_id path string true "ID du projet"
+// @Param orga_id path string true "Organization ID"
+// @Param az path string true "Availability zone"
+// @Param project_id path string true "Project ID"
 // @Param id path string true "EIP ID (Effective ID)"
 // @Param Authorization header string true "api-token {token}"
 // @Success 204 "No Content"
@@ -450,20 +450,20 @@ func (h *EipHandler) DeleteEip(c echo.Context) error {
 
 	err = client.DeleteEip(c.Request().Context(), orgaID, az, projectID, id)
 	if err != nil {
-		// Retry unique après 1s si le premier delete échoue (demande utilisateur)
+		// Single retry after 1s if the first delete fails (user request)
 		select {
 		case <-c.Request().Context().Done():
 			return c.Request().Context().Err()
 		case <-time.After(1 * time.Second):
 			err = client.DeleteEip(c.Request().Context(), orgaID, az, projectID, id)
 			if err != nil {
-				return c.JSON(spxStatus(err, http.StatusInternalServerError), map[string]string{"error": fmt.Sprintf("Erreur API SPX lors de la suppression: %v", err)})
+				return c.JSON(spxStatus(err, http.StatusInternalServerError), map[string]string{"error": fmt.Sprintf("SPX API error during deletion: %v", err)})
 			}
 		}
 	}
 
-	// Polling pour attendre la suppression réelle
-	maxRetries := 60 // 60 * intervalle
+	// Poll to wait for the actual deletion
+	maxRetries := 60 // 60 * interval
 	interval := h.PollingInterval
 	if interval == 0 {
 		interval = 5 * time.Second
@@ -472,7 +472,7 @@ func (h *EipHandler) DeleteEip(c echo.Context) error {
 	for i := 0; i < maxRetries; i++ {
 		_, err := client.GetEip(c.Request().Context(), orgaID, az, projectID, id)
 		if err != nil {
-			// On suppose qu'une erreur ici (probablement 404) signifie que l'objet est supprimé
+			// Assume an error here (probably 404) means the object is deleted
 			return c.NoContent(http.StatusNoContent)
 		}
 
@@ -480,21 +480,21 @@ func (h *EipHandler) DeleteEip(c echo.Context) error {
 		case <-c.Request().Context().Done():
 			return c.Request().Context().Err()
 		case <-time.After(interval):
-			// Continuer la boucle
+			// Continue the loop
 		}
 	}
 
-	return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Timeout : l'EIP n'a pas été supprimé après 5 minutes"})
+	return c.JSON(http.StatusInternalServerError, map[string]string{"error": "timeout: the EIP was not deleted after 5 minutes"})
 }
 
-// ListEips liste tous les EIPs.
-// @Summary Lister les EIPs
-// @Description Renvoie la liste de tous les EIPs en appelant l'API SPX.
+// ListEips lists all EIPs.
+// @Summary List EIPs
+// @Description Returns the list of all EIPs by calling the SPX API.
 // @Tags eip
 // @Produce json
-// @Param orga_id path string true "ID de l'organisation"
-// @Param az path string true "Zone de disponibilité"
-// @Param project_id path string true "ID du projet"
+// @Param orga_id path string true "Organization ID"
+// @Param az path string true "Availability zone"
+// @Param project_id path string true "Project ID"
 // @Param Authorization header string true "api-token {token}"
 // @Success 200 {array} models.Eip
 // @Failure 401 {object} map[string]string
@@ -512,7 +512,7 @@ func (h *EipHandler) ListEips(c echo.Context) error {
 
 	resp, err := client.ListEips(c.Request().Context(), orgaID, az, projectID)
 	if err != nil {
-		return c.JSON(spxStatus(err, http.StatusInternalServerError), map[string]string{"error": fmt.Sprintf("Erreur API SPX: %v", err)})
+		return c.JSON(spxStatus(err, http.StatusInternalServerError), map[string]string{"error": fmt.Sprintf("SPX API error: %v", err)})
 	}
 
 	list := make([]*models.Eip, 0, len(resp))

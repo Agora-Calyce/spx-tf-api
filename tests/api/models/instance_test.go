@@ -15,7 +15,7 @@ func TestInstanceRequest_Validate(t *testing.T) {
 		msg     string
 	}{
 		{
-			name: "Valide",
+			name: "Valid",
 			req: models.InstanceRequest{
 				Name:        "ma-vm",
 				RunStrategy: "Always",
@@ -28,53 +28,53 @@ func TestInstanceRequest_Validate(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "CPU trop élevé",
+			name: "CPU too high",
 			req: models.InstanceRequest{
 				Name: "ma-vm",
 				CPU:  33,
 			},
 			wantErr: true,
-			msg:     "le nombre de CPU ne doit pas dépasser 32",
+			msg:     "CPU count must not exceed 32",
 		},
 		{
-			name: "Mémoire trop élevée",
+			name: "Memory too high",
 			req: models.InstanceRequest{
 				Name:   "ma-vm",
 				CPU:    1,
 				Memory: 65,
 			},
 			wantErr: true,
-			msg:     "la mémoire ne doit pas dépasser 64 GB",
+			msg:     "memory must not exceed 64 GB",
 		},
 		{
-			name: "Nom vide",
+			name: "Empty name",
 			req: models.InstanceRequest{
 				Name: "",
 			},
 			wantErr: true,
-			msg:     "le nom est requis",
+			msg:     "name is required",
 		},
 		{
-			name: "CPU invalide",
+			name: "Invalid CPU",
 			req: models.InstanceRequest{
 				Name: "ma-vm",
 				CPU:  0,
 			},
 			wantErr: true,
-			msg:     "le nombre de CPU doit être supérieur à 0",
+			msg:     "CPU count must be greater than 0",
 		},
 		{
-			name: "Mémoire invalide",
+			name: "Invalid memory",
 			req: models.InstanceRequest{
 				Name:   "ma-vm",
 				CPU:    1,
 				Memory: 0,
 			},
 			wantErr: true,
-			msg:     "la mémoire doit être supérieure à 0",
+			msg:     "memory must be greater than 0",
 		},
 		{
-			name: "Réseau manquant",
+			name: "Missing network",
 			req: models.InstanceRequest{
 				Name:    "ma-vm",
 				CPU:     1,
@@ -82,10 +82,10 @@ func TestInstanceRequest_Validate(t *testing.T) {
 				Network: []models.InstanceNetwork{},
 			},
 			wantErr: true,
-			msg:     "au moins un réseau est requis",
+			msg:     "at least one network is required",
 		},
 		{
-			name: "Subnet ID manquant",
+			name: "Missing subnet ID",
 			req: models.InstanceRequest{
 				Name:   "ma-vm",
 				CPU:    1,
@@ -95,10 +95,10 @@ func TestInstanceRequest_Validate(t *testing.T) {
 				},
 			},
 			wantErr: true,
-			msg:     "l'ID du subnet est requis pour chaque interface réseau",
+			msg:     "the subnet ID is required for each network interface",
 		},
 		{
-			name: "Labels valides",
+			name: "Valid labels",
 			req: models.InstanceRequest{
 				Name:   "ma-vm",
 				CPU:    1,
@@ -111,7 +111,7 @@ func TestInstanceRequest_Validate(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "Label invalide",
+			name: "Invalid label",
 			req: models.InstanceRequest{
 				Name:   "ma-vm",
 				CPU:    1,
@@ -122,7 +122,7 @@ func TestInstanceRequest_Validate(t *testing.T) {
 				Labels: []string{"env:prod"},
 			},
 			wantErr: true,
-			msg:     "la clé du label 'env:prod' doit commencer par 'user.superphenix.net/'",
+			msg:     "label key 'env:prod' must start with 'user.superphenix.net/'",
 		},
 	}
 

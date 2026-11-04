@@ -49,8 +49,8 @@ func runVPCUpdate(t *testing.T, serverURL string, body models.VPCRequest) *httpt
 	return rec
 }
 
-// Sans static_routes dans la requête, les routes utilisateur existantes doivent être renvoyées à SPX
-// (l'API SPX remplace toutes les routes à chaque mise à jour) et les routes auto-générées ignorées.
+// Without static_routes in the request, the existing user routes must be sent back to SPX
+// (the SPX API replaces all routes on every update) and auto-generated routes ignored.
 func TestVPCHandler_UpdateVPC_PreservesStaticRoutes(t *testing.T) {
 	callCount := 0
 	var sentRoutes []map[string]interface{}
@@ -58,7 +58,7 @@ func TestVPCHandler_UpdateVPC_PreservesStaticRoutes(t *testing.T) {
 		callCount++
 		assert.Contains(t, r.URL.Path, "/vpc/vpc-123")
 		switch callCount {
-		case 1: // Get de l'état actuel
+		case 1: // Get the current state
 			assert.Equal(t, http.MethodGet, r.Method)
 			w.Header().Set("Content-Type", "application/json")
 			fmt.Fprintf(w, vpcWithRoutesJSON, "old-name")
@@ -88,9 +88,9 @@ func TestVPCHandler_UpdateVPC_PreservesStaticRoutes(t *testing.T) {
 	rec := runVPCUpdate(t, mockServer.URL, models.VPCRequest{Name: "new-name-req"})
 
 	assert.Equal(t, http.StatusOK, rec.Code)
-	assert.Equal(t, 3, callCount, "Get (état actuel), Update puis Get final")
+	assert.Equal(t, 3, callCount, "Get (current state), Update then final Get")
 
-	// Seule la route utilisateur est renvoyée, pas la route auto-générée de la NAT Gateway
+	// Only the user route is sent back, not the auto-generated NAT Gateway route
 	if assert.Len(t, sentRoutes, 1) {
 		assert.Equal(t, "192.168.10.0/24", sentRoutes[0]["cidr"])
 		assert.Equal(t, "subnet-1", sentRoutes[0]["routeTable"])
@@ -99,20 +99,20 @@ func TestVPCHandler_UpdateVPC_PreservesStaticRoutes(t *testing.T) {
 	var resp models.VPC
 	assert.NoError(t, json.Unmarshal(rec.Body.Bytes(), &resp))
 	assert.Equal(t, "vpc-123", resp.ID)
-	assert.Equal(t, "new-name-from-get", resp.Name, "Le nom doit provenir du Get final, pas de la requête")
+	assert.Equal(t, "new-name-from-get", resp.Name, "The name must come from the final Get, not from the request")
 	if assert.Len(t, resp.StaticRoutes, 1) {
 		assert.Equal(t, models.StaticRoute{Policy: "policyDst", CIDR: "192.168.10.0/24", NextHopIP: "10.0.0.254", RouteTable: "subnet-1"}, resp.StaticRoutes[0])
 	}
 }
 
-// Avec static_routes explicite, la liste est envoyée telle quelle (policy par défaut : policyDst)
+// With explicit static_routes, the list is sent as is (default policy: policyDst)
 func TestVPCHandler_UpdateVPC_ExplicitStaticRoutes(t *testing.T) {
 	callCount := 0
 	var sentRoutes []map[string]interface{}
 	mockServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		callCount++
 		switch callCount {
-		case 1: // Update, sans Get préalable
+		case 1: // Update, without a prior Get
 			assert.Equal(t, http.MethodPost, r.Method)
 			raw, _ := io.ReadAll(r.Body)
 			var body struct {
@@ -144,7 +144,7 @@ func TestVPCHandler_UpdateVPC_ExplicitStaticRoutes(t *testing.T) {
 	}
 }
 
-// Une liste vide explicite doit être envoyée comme [] (suppression de toutes les routes utilisateur)
+// An explicit empty list must be sent as [] (removes all user routes)
 func TestVPCHandler_UpdateVPC_EmptyStaticRoutes(t *testing.T) {
 	var rawBody string
 	mockServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

@@ -17,31 +17,31 @@ import (
 
 // @title SPX TF Proxy API
 // @version 1.0
-// @description API Proxy pour la génération d'un provider Terraform.
+// @description Proxy API used to build a Terraform provider.
 // @host localhost:8080
 // @BasePath /
 
 func main() {
-	// Configuration de zerolog
+	// zerolog configuration
 	zerolog.SetGlobalLevel(zerolog.DebugLevel)
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
 	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 
-	// Initialisation de Echo
+	// Initialize Echo
 	e := echo.New()
 
-	// Initialisation des stores
+	// Initialize the stores
 	configStore := store.NewConfigStore()
 
-	// Initialisation de la configuration par défaut via variable d'environnement
+	// Initialize the default configuration from an environment variable
 	defaultEndpoint := os.Getenv("SPX_API_ENDPOINT")
 	if defaultEndpoint == "" {
-		log.Fatal().Msg("L'URL de l'API cible doit être spécifiée via la variable d'environnement SPX_API_ENDPOINT")
+		log.Fatal().Msg("The target API URL must be set through the SPX_API_ENDPOINT environment variable")
 	}
 	configStore.SetEndpoint(defaultEndpoint)
-	log.Info().Str("endpoint", defaultEndpoint).Msg("Endpoint initialisé")
+	log.Info().Str("endpoint", defaultEndpoint).Msg("Endpoint initialized")
 
-	// Initialisation des handlers
+	// Initialize the handlers
 	vpcHandler := handlers.NewVPCHandler(configStore)
 	subnetHandler := handlers.NewSubnetHandler(configStore)
 	diskHandler := handlers.NewDiskHandler(configStore)
@@ -51,13 +51,13 @@ func main() {
 	instanceHandler := handlers.NewInstanceHandler(configStore)
 	sgHandler := handlers.NewSecurityGroupHandler(configStore)
 
-	// Middlewares de base
+	// Base middlewares
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 
-	// Route de santé
-	// @Summary Vérifier l'état de l'API
-	// @Description Renvoie le statut de fonctionnement de l'API.
+	// Health route
+	// @Summary Check the API status
+	// @Description Returns the operational status of the API.
 	// @Tags health
 	// @Produce json
 	// @Success 200 {object} map[string]string
@@ -71,21 +71,21 @@ func main() {
 	// Swagger UI
 	e.GET("/swagger/*", echoSwagger.WrapHandler)
 
-	// Routes VPC
+	// VPC routes
 	e.POST("/:orga_id/:az/:project_id/vpcs", vpcHandler.CreateVPC)
 	e.GET("/:orga_id/:az/:project_id/vpcs", vpcHandler.ListVPCs)
 	e.GET("/:orga_id/:az/:project_id/vpcs/:id", vpcHandler.GetVPC)
 	e.PUT("/:orga_id/:az/:project_id/vpcs/:id", vpcHandler.UpdateVPC)
 	e.DELETE("/:orga_id/:az/:project_id/vpcs/:id", vpcHandler.DeleteVPC)
 
-	// Routes Subnet
+	// Subnet routes
 	e.POST("/:orga_id/:az/:project_id/subnets", subnetHandler.CreateSubnet)
 	e.GET("/:orga_id/:az/:project_id/subnets", subnetHandler.ListSubnets)
 	e.GET("/:orga_id/:az/:project_id/subnets/:id", subnetHandler.GetSubnet)
 	e.PUT("/:orga_id/:az/:project_id/subnets/:id", subnetHandler.UpdateSubnet)
 	e.DELETE("/:orga_id/:az/:project_id/subnets/:id", subnetHandler.DeleteSubnet)
 
-	// Routes Disk
+	// Disk routes
 	e.POST("/:orga_id/:az/:project_id/disks", diskHandler.CreateDisk)
 	e.GET("/:orga_id/:az/:project_id/disks", diskHandler.ListDisks)
 	e.GET("/:orga_id/:az/:project_id/disks/:id", diskHandler.GetDisk)
@@ -93,27 +93,27 @@ func main() {
 	e.DELETE("/:orga_id/:az/:project_id/disks/:id", diskHandler.DeleteDisk)
 	e.GET("/:orga_id/:az/:project_id/storage-classes", diskHandler.ListStorageClasses)
 
-	// Routes EIP
+	// EIP routes
 	e.POST("/:orga_id/:az/:project_id/eips", eipHandler.CreateEip)
 	e.GET("/:orga_id/:az/:project_id/eips", eipHandler.ListEips)
 	e.GET("/:orga_id/:az/:project_id/eips/:id", eipHandler.GetEip)
 	e.PUT("/:orga_id/:az/:project_id/eips/:id", eipHandler.UpdateEip)
 	e.DELETE("/:orga_id/:az/:project_id/eips/:id", eipHandler.DeleteEip)
 
-	// Routes Load Balancer
+	// Load Balancer routes
 	e.POST("/:orga_id/:az/:project_id/load-balancers", lbHandler.CreateLoadBalancer)
 	e.GET("/:orga_id/:az/:project_id/load-balancers", lbHandler.ListLoadBalancers)
 	e.GET("/:orga_id/:az/:project_id/load-balancers/:id", lbHandler.GetLoadBalancer)
 	e.PUT("/:orga_id/:az/:project_id/load-balancers/:id", lbHandler.UpdateLoadBalancer)
 	e.DELETE("/:orga_id/:az/:project_id/load-balancers/:id", lbHandler.DeleteLoadBalancer)
 
-	// Routes SSH Keys
+	// SSH key routes
 	e.POST("/:orga_id/:az/:project_id/ssh-keys", sshKeyHandler.CreateSSHKey)
 	e.GET("/:orga_id/:az/:project_id/ssh-keys", sshKeyHandler.ListSSHKeys)
 	e.GET("/:orga_id/:az/:project_id/ssh-keys/:id", sshKeyHandler.GetSSHKey)
 	e.DELETE("/:orga_id/:az/:project_id/ssh-keys/:id", sshKeyHandler.DeleteSSHKey)
 
-	// Routes Instance
+	// Instance routes
 	e.POST("/:orga_id/:az/:project_id/instances", instanceHandler.CreateInstance)
 	e.GET("/:orga_id/:az/:project_id/instances", instanceHandler.ListInstances)
 	e.GET("/:orga_id/:az/:project_id/instances/:id", instanceHandler.GetInstance)
@@ -121,24 +121,24 @@ func main() {
 	e.DELETE("/:orga_id/:az/:project_id/instances/:id", instanceHandler.DeleteInstance)
 	e.GET("/:orga_id/:az/:project_id/vm-types", instanceHandler.ListVMTypes)
 
-	// Routes Security Group
+	// Security group routes
 	e.POST("/:orga_id/:az/:project_id/security-groups", sgHandler.CreateSecurityGroup)
 	e.GET("/:orga_id/:az/:project_id/security-groups", sgHandler.ListSecurityGroups)
 	e.GET("/:orga_id/:az/:project_id/security-groups/:eid", sgHandler.GetSecurityGroup)
 	e.POST("/:orga_id/:az/:project_id/security-groups/:eid", sgHandler.UpdateSecurityGroup)
 	e.DELETE("/:orga_id/:az/:project_id/security-groups/:eid", sgHandler.DeleteSecurityGroup)
 
-	// TODO: Configurer le proxy vers l'API cible une fois le swagger reçu
+	// TODO: Configure the proxy to the target API once the swagger is received
 	// e.Any("/proxy/*", handlers.ProxyHandler)
 
-	// Démarrage du serveur
+	// Start the server
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"
 	}
 
-	log.Info().Str("port", port).Msg("Démarrage du serveur")
+	log.Info().Str("port", port).Msg("Starting server")
 	if err := e.Start(":" + port); err != nil {
-		log.Fatal().Err(err).Msg("Erreur lors du démarrage du serveur")
+		log.Fatal().Err(err).Msg("Error starting server")
 	}
 }

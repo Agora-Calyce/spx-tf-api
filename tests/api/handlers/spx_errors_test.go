@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// mockSPXStatus démarre une API SPX qui répond toujours avec le statut donné.
+// mockSPXStatus starts an SPX API that always responds with the given status.
 func mockSPXStatus(t *testing.T, status int) *store.ConfigStore {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(status)
@@ -24,7 +24,7 @@ func mockSPXStatus(t *testing.T, status int) *store.ConfigStore {
 	return configStore
 }
 
-// httpStatus renvoie le statut final d'un handler, qu'il écrive la réponse ou renvoie une echo.HTTPError.
+// httpStatus returns the final status of a handler, whether it writes the response or returns an echo.HTTPError.
 func httpStatus(t *testing.T, rec *httptest.ResponseRecorder, err error) int {
 	if he, ok := err.(*echo.HTTPError); ok {
 		return he.Code
@@ -48,12 +48,12 @@ func TestSPXErrors_4xxForwarded(t *testing.T) {
 		t.Run(http.StatusText(status), func(t *testing.T) {
 			configStore := mockSPXStatus(t, status)
 
-			// Liste : auparavant 500
+			// List: previously 500
 			c, rec := newContext("/orga1/az1/proj1/vm-types", []string{"orga_id", "az", "project_id"}, []string{"orga1", "az1", "proj1"})
 			err := handlers.NewInstanceHandler(configStore).ListVMTypes(c)
 			assert.Equal(t, status, httpStatus(t, rec, err))
 
-			// Lecture : auparavant 404, ce qui faisait sortir la ressource du state Terraform
+			// Read: previously 404, which dropped the resource from the Terraform state
 			c, rec = newContext("/orga1/az1/proj1/vpcs/vpc1", []string{"orga_id", "az", "project_id", "id"}, []string{"orga1", "az1", "proj1", "vpc1"})
 			err = handlers.NewVPCHandler(configStore).GetVPC(c)
 			assert.Equal(t, status, httpStatus(t, rec, err))

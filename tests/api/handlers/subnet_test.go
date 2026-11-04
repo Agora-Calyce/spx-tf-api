@@ -22,7 +22,7 @@ func TestSubnetHandler_CreateSubnet_Retry(t *testing.T) {
 		w.Header().Set("Content-Type", "application/json")
 
 		if r.Method == http.MethodPost {
-			// Création réussie
+			// Successful creation
 			w.WriteHeader(http.StatusCreated)
 			fmt.Fprint(w, `{"eid": "subnet-123"}`)
 			return
@@ -33,7 +33,7 @@ func TestSubnetHandler_CreateSubnet_Retry(t *testing.T) {
 			w.WriteHeader(http.StatusOK)
 
 			if calls == 1 {
-				// Pas encore de status prêt
+				// No ready status yet
 				fmt.Fprint(w, `{
 					"eid": "subnet-123",
 					"productName": "test-subnet",
@@ -46,7 +46,7 @@ func TestSubnetHandler_CreateSubnet_Retry(t *testing.T) {
 					}
 				}`)
 			} else {
-				// Status présent au second appel
+				// Status present on the second call
 				fmt.Fprint(w, `{
 					"eid": "subnet-123",
 					"productName": "test-subnet",
@@ -74,7 +74,7 @@ func TestSubnetHandler_CreateSubnet_Retry(t *testing.T) {
 	configStore := store.NewConfigStore()
 	configStore.SetEndpoint(mockServer.URL)
 	h := handlers.NewSubnetHandler(configStore)
-	h.PollingInterval = 10 * time.Millisecond // Intervalle court pour le test
+	h.PollingInterval = 10 * time.Millisecond // Short interval for the test
 
 	reqBody := `{"name": "test-subnet", "vpc_id": "vpc-123", "ipv4": "10.0.1.0/24", "protocol": "IPv4"}`
 	req := httptest.NewRequest(http.MethodPost, "/orga-1/az1/proj-1/subnets", strings.NewReader(reqBody))
@@ -85,7 +85,7 @@ func TestSubnetHandler_CreateSubnet_Retry(t *testing.T) {
 	c.SetParamNames("orga_id", "az", "project_id")
 	c.SetParamValues("orga-1", "az1", "proj-1")
 
-	// Exécution
+	// Execution
 	err := h.CreateSubnet(c)
 
 	// Assertions
@@ -108,7 +108,7 @@ func TestSubnetHandler_GetSubnet_Retry(t *testing.T) {
 		w.WriteHeader(http.StatusOK)
 
 		if calls == 1 {
-			// Pas encore prêt
+			// Not ready yet
 			fmt.Fprint(w, `{
 				"eid": "subnet-get",
 				"productName": "get-subnet",
@@ -117,7 +117,7 @@ func TestSubnetHandler_GetSubnet_Retry(t *testing.T) {
 				}
 			}`)
 		} else {
-			// Prêt
+			// Ready
 			fmt.Fprint(w, `{
 				"eid": "subnet-get",
 				"productName": "get-subnet",
@@ -144,7 +144,7 @@ func TestSubnetHandler_GetSubnet_Retry(t *testing.T) {
 	c.SetParamNames("orga_id", "az", "project_id", "id")
 	c.SetParamValues("orga-1", "az1", "proj-1", "subnet-get")
 
-	// Exécution
+	// Execution
 	err := h.GetSubnet(c)
 
 	// Assertions

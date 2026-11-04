@@ -8,7 +8,7 @@ import (
 	"github.com/Agora-Calyce/spx-tf-api/pkg/client/spx/models"
 )
 
-// ListEips récupère la liste des EIPs pour un projet et une AZ donnés
+// ListEips retrieves the list of EIPs for a given project and AZ
 func (c *Client) ListEips(ctx context.Context, orgaID, az, projectID string) ([]models.EipFullResponse, error) {
 	path := fmt.Sprintf("/%s/api/spx-ctrl/%s/%s/eip", orgaID, az, projectID)
 	resp, err := c.do(ctx, http.MethodGet, path, nil, nil)
@@ -24,7 +24,7 @@ func (c *Client) ListEips(ctx context.Context, orgaID, az, projectID string) ([]
 	return eips, nil
 }
 
-// CreateEip crée un nouveau EIP
+// CreateEip creates a new EIP
 func (c *Client) CreateEip(ctx context.Context, orgaID, az, projectID string, body *models.CreateEipBody) (*models.CreateResponse, error) {
 	path := fmt.Sprintf("/%s/api/spx-ctrl/%s/%s/eip", orgaID, az, projectID)
 	resp, err := c.do(ctx, http.MethodPost, path, body, nil)
@@ -40,7 +40,7 @@ func (c *Client) CreateEip(ctx context.Context, orgaID, az, projectID string, bo
 	return &createResp, nil
 }
 
-// GetEip récupère un EIP par son ID effectif
+// GetEip retrieves an EIP by its ID
 func (c *Client) GetEip(ctx context.Context, orgaID, az, projectID, effectiveID string) (*models.EipFullResponse, error) {
 	path := fmt.Sprintf("/%s/api/spx-ctrl/%s/%s/eip/%s", orgaID, az, projectID, effectiveID)
 	resp, err := c.do(ctx, http.MethodGet, path, nil, nil)
@@ -56,7 +56,7 @@ func (c *Client) GetEip(ctx context.Context, orgaID, az, projectID, effectiveID 
 	return &eip, nil
 }
 
-// UpdateEip met à jour un EIP existant
+// UpdateEip updates an existing EIP
 func (c *Client) UpdateEip(ctx context.Context, orgaID, az, projectID, effectiveID string, body *models.UpdateEipBody) error {
 	path := fmt.Sprintf("/%s/api/spx-ctrl/%s/%s/eip/%s", orgaID, az, projectID, effectiveID)
 	resp, err := c.do(ctx, http.MethodPost, path, body, nil)
@@ -67,7 +67,7 @@ func (c *Client) UpdateEip(ctx context.Context, orgaID, az, projectID, effective
 	return decodeResponse(resp, nil)
 }
 
-// DeleteEip supprime un EIP
+// DeleteEip deletes an EIP
 func (c *Client) DeleteEip(ctx context.Context, orgaID, az, projectID, effectiveID string) error {
 	path := fmt.Sprintf("/%s/api/spx-ctrl/%s/%s/eip/%s", orgaID, az, projectID, effectiveID)
 	resp, err := c.do(ctx, http.MethodDelete, path, nil, nil)

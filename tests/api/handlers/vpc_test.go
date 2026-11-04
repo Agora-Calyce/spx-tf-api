@@ -29,22 +29,22 @@ func TestVPCHandler_AuthorizationHeader(t *testing.T) {
 		expectedError  string
 	}{
 		{
-			name:           "Header manquant",
+			name:           "Missing header",
 			authHeader:     "",
 			expectedStatus: http.StatusUnauthorized,
-			expectedError:  "Header Authorization manquant",
+			expectedError:  "Missing Authorization header",
 		},
 		{
-			name:           "Format invalide (pas de api-token)",
+			name:           "Invalid format (no api-token)",
 			authHeader:     "token123",
 			expectedStatus: http.StatusUnauthorized,
-			expectedError:  "Format du token invalide (attendu: api-token {token})",
+			expectedError:  "Invalid token format (expected: api-token {token})",
 		},
 		{
-			name:           "Format invalide (api-token seul)",
+			name:           "Invalid format (api-token alone)",
 			authHeader:     "api-token ",
 			expectedStatus: http.StatusUnauthorized,
-			expectedError:  "Format du token invalide (attendu: api-token {token})",
+			expectedError:  "Invalid token format (expected: api-token {token})",
 		},
 	}
 
@@ -65,17 +65,17 @@ func TestVPCHandler_AuthorizationHeader(t *testing.T) {
 
 			err := h.CreateVPC(c)
 
-			// Le middleware Echo peut transformer l'erreur en réponse si c'est un HTTPError
+			// The Echo middleware may turn the error into a response if it is an HTTPError
 			if err != nil {
 				he, ok := err.(*echo.HTTPError)
 				if ok {
 					assert.Equal(t, tt.expectedStatus, he.Code)
 					assert.Contains(t, he.Message.(string), tt.expectedError)
 				} else {
-					t.Fatalf("Attendu echo.HTTPError, got %v", err)
+					t.Fatalf("Expected echo.HTTPError, got %v", err)
 				}
 			} else {
-				// Si pas d'erreur retournée par le handler, on check le recorder
+				// If the handler returned no error, check the recorder
 				assert.Equal(t, tt.expectedStatus, rec.Code)
 				var resp map[string]string
 				json.Unmarshal(rec.Body.Bytes(), &resp)
@@ -140,7 +140,7 @@ func TestVPCHandler_AllEndpoints_Authorization(t *testing.T) {
 
 			req := httptest.NewRequest(tt.method, tt.path, &buf)
 			req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-			// On ne met pas de header Authorization
+			// No Authorization header
 
 			rec := httptest.NewRecorder()
 			c := e.NewContext(req, rec)
@@ -177,7 +177,7 @@ func TestVPCHandler_AllEndpoints_Authorization(t *testing.T) {
 				he, ok := err.(*echo.HTTPError)
 				if ok {
 					assert.Equal(t, http.StatusUnauthorized, he.Code)
-					assert.Contains(t, he.Message.(string), "Header Authorization manquant")
+					assert.Contains(t, he.Message.(string), "Missing Authorization header")
 				}
 			}
 		})

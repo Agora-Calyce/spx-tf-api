@@ -8,7 +8,7 @@ import (
 	"github.com/Agora-Calyce/spx-tf-api/pkg/client/spx/models"
 )
 
-// GetOrganization récupère une organisation par son ID
+// GetOrganization retrieves an organization by its ID
 func (c *Client) GetOrganization(ctx context.Context, orgaID string) (*models.Organization, error) {
 	resp, err := c.do(ctx, http.MethodGet, fmt.Sprintf("/v1/organization/%s", orgaID), nil, nil)
 	if err != nil {
@@ -23,7 +23,7 @@ func (c *Client) GetOrganization(ctx context.Context, orgaID string) (*models.Or
 	return &orga, nil
 }
 
-// CreateProject crée un nouveau projet dans une organisation
+// CreateProject creates a new project in an organization
 func (c *Client) CreateProject(ctx context.Context, orgaID string, project *models.APIProject) (*models.APIProject, error) {
 	resp, err := c.do(ctx, http.MethodPost, fmt.Sprintf("/v1/organization/%s/project", orgaID), project, nil)
 	if err != nil {
